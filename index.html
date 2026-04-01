@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TME+ Membership Sidekick</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f5f6fa;color:#222;height:100vh;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh}
+
+.setup-wrap{background:linear-gradient(135deg,#1C2B1C,#2A3D28);display:flex;align-items:center;justify-content:center;padding:40px 20px;flex:1}
+.setup-card{background:#fff;border-radius:16px;padding:36px;max-width:480px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.setup-card h1{font-size:20px;font-weight:900;color:#1C2B1C;margin:10px 0 6px}
+.setup-card p{font-size:13px;color:#666;line-height:1.6;margin-bottom:22px}
+.setup-card label{display:block;font-size:11px;font-weight:800;color:#1C2B1C;margin-bottom:4px;letter-spacing:.4px;text-transform:uppercase}
+.setup-card input{width:100%;padding:9px 12px;border:1.5px solid #e0e3f0;border-radius:7px;font-size:13px;outline:none;font-family:inherit;transition:border-color .15s;margin-bottom:12px}
+.setup-card input:focus{border-color:#F07830}
+.btn-primary{width:100%;background:linear-gradient(135deg,#F07830,#e06820);color:#fff;border:none;border-radius:9px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;margin-top:4px;font-family:inherit}
+.btn-primary:disabled{background:#ccc;cursor:default}
+
+#header{background:#1C2B1C;color:#fff;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:10}
+.hlogo{display:flex;align-items:center;gap:10px}
+.hlogo-title{font-weight:900;font-size:14px}
+.hlogo-sub{font-size:10px;opacity:.45}
+.hprog{display:flex;align-items:center;gap:14px}
+.hprog-inner{text-align:right}
+.hprog-label{font-size:9px;opacity:.5;letter-spacing:.5px;text-transform:uppercase}
+.hprog-val{font-size:12px;font-weight:700;margin-bottom:3px}
+.prog-bar{width:80px;height:4px;background:rgba(255,255,255,.15);border-radius:3px;margin-left:auto}
+.prog-fill{height:100%;background:#5ABF59;border-radius:3px;transition:width .4s}
+.btn-claude-toggle{display:flex;align-items:center;gap:9px;background:linear-gradient(135deg,#F07830,#e06820);border:none;color:#fff;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .2s;flex-shrink:0;box-shadow:0 4px 14px rgba(240,120,48,.45)}
+.btn-claude-toggle:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(240,120,48,.55)}
+.btn-claude-toggle.active{background:rgba(255,255,255,.15);box-shadow:none;border:1px solid rgba(255,255,255,.2)}
+.claude-dot{width:8px;height:8px;border-radius:50%;background:#5ABF59;flex-shrink:0;box-shadow:0 0 6px #5ABF59}
+
+#body-row{display:flex;flex:1;overflow:hidden}
+
+#sidebar{width:215px;background:#243222;flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column}
+.mod-group{border-bottom:1px solid rgba(255,255,255,.06)}
+.mod-header{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;transition:background .15s;user-select:none}
+.mod-header:hover{background:rgba(255,255,255,.04)}
+.mod-header.active-mod{background:rgba(240,120,48,.15)}
+.mod-header.locked-mod{cursor:default;opacity:.6}
+.mod-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.mod-tag{font-size:9px;font-weight:800;letter-spacing:.7px;opacity:.4;color:#fff;text-transform:uppercase}
+.mod-name{font-size:11.5px;font-weight:600;color:rgba(255,255,255,.7);line-height:1.3;margin-top:1px}
+.mod-name.locked{opacity:.35}
+.mod-chevron{font-size:10px;color:rgba(255,255,255,.25);transition:transform .2s;flex-shrink:0}
+.mod-chevron.open{transform:rotate(90deg)}
+.lessons-list{overflow:hidden;transition:max-height .25s ease}
+.lesson-btn{display:flex;align-items:flex-start;gap:8px;width:100%;padding:7px 14px 7px 30px;border:none;cursor:pointer;background:transparent;text-align:left;color:rgba(255,255,255,.45);border-left:2px solid transparent;transition:all .15s;font-family:inherit}
+.lesson-btn:hover:not(.lesson-locked){background:rgba(255,255,255,.04);color:rgba(255,255,255,.7)}
+.lesson-btn.active{background:rgba(240,120,48,.2);border-left-color:#F07830;color:#fff}
+.lesson-btn.lesson-locked{cursor:default;opacity:.35}
+.ltag{font-size:8.5px;font-weight:800;letter-spacing:.6px;opacity:.5;margin-bottom:1px;text-transform:uppercase}
+.ltitle{font-size:11px;font-weight:500;line-height:1.35}
+.licon{font-size:12px;flex-shrink:0;margin-top:1px}
+.optional-badge{font-size:8px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.4);border-radius:3px;padding:1px 4px;margin-top:2px;display:inline-block;letter-spacing:.4px;text-transform:uppercase}
+.sidebar-footer{margin-top:auto;padding:12px 14px;border-top:1px solid rgba(255,255,255,.07)}
+.sf-label{font-size:9.5px;color:rgba(255,255,255,.25);margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
+.sf-name{font-size:11px;color:rgba(255,255,255,.4);font-style:italic;line-height:1.4}
+.sf-edit{margin-top:5px;font-size:10px;color:rgba(255,255,255,.25);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit;padding:0}
+
+#content{flex:1;overflow-y:auto;padding:22px 26px;background:#f5f6fa;transition:margin-right .25s}
+.lesson-tag-bar{font-size:9.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:3px}
+.lesson-big-title{font-size:20px;font-weight:900;color:#1C2B1C;margin-bottom:16px}
+.tabs{display:flex;gap:3px;background:#e8eaf0;border-radius:8px;padding:3px;width:fit-content;margin-bottom:16px}
+.tab-btn{padding:6px 20px;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:12px;background:transparent;color:#777;transition:all .15s;font-family:inherit}
+.tab-btn.active{background:#fff;color:#1C2B1C;box-shadow:0 1px 4px rgba(0,0,0,.09)}
+
+.learn-card{background:#fff;border-radius:9px;padding:14px 16px;margin-bottom:11px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.learn-heading{font-size:13px;font-weight:800;color:#1C2B1C;margin-bottom:8px}
+.learn-card ul{padding-left:16px}
+.learn-card li{font-size:13px;color:#444;margin-bottom:5px;line-height:1.55}
+.mindset-card{border-radius:9px;padding:13px 15px;margin-bottom:14px;border:1px solid rgba(240,120,48,.2);background:linear-gradient(135deg,rgba(240,120,48,.05),rgba(90,191,89,.05))}
+.mindset-lbl{font-size:9.5px;font-weight:800;letter-spacing:1px;margin-bottom:5px}
+.mindset-txt{font-size:13.5px;font-style:italic;color:#1C2B1C;line-height:1.65}
+
+.task-card{background:#fff;border-radius:9px;padding:14px 16px;margin-bottom:11px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.task-lbl{font-size:13px;font-weight:700;color:#1C2B1C;margin-bottom:9px;line-height:1.5;white-space:pre-line}
+.task-num{font-weight:900}
+textarea{width:100%;min-height:86px;padding:9px 11px;border:1.5px solid #e0e3f0;border-radius:7px;font-size:13px;color:#333;resize:vertical;outline:none;font-family:inherit;line-height:1.55;transition:border-color .15s}
+.radio-opt,.check-opt{display:flex;align-items:center;gap:9px;cursor:pointer;padding:7px 11px;border-radius:7px;border:1.5px solid #e0e3f0;background:#fff;margin-bottom:6px;font-size:13px;color:#333;transition:all .15s}
+
+.prompt-section-lbl{font-size:10px;font-weight:800;color:#999;letter-spacing:.8px;text-transform:uppercase;margin:18px 0 9px}
+.prompt-card{background:#fff;border-radius:9px;padding:14px 15px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.05);border:1px solid #eceef5}
+.prompt-card-lbl{font-size:12.5px;font-weight:800;color:#1C2B1C;margin-bottom:5px}
+.prompt-hint{font-size:11.5px;color:#888;margin-bottom:9px;line-height:1.5}
+.prompt-box{background:#f8f9ff;border:1px solid #e0e3f0;border-radius:7px;padding:11px 13px;font-size:12px;color:#555;line-height:1.7;white-space:pre-wrap;font-family:inherit;margin-bottom:9px;max-height:180px;overflow-y:auto}
+.btn-copy{display:inline-flex;align-items:center;gap:6px;background:#f0f2f8;color:#555;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+.btn-copy.copied{background:#d1fae5;color:#065f46}
+.prompt-btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn-ask-claude{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#1C2B1C,#2A6B2A);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;box-shadow:0 2px 8px rgba(28,43,28,.2)}
+.btn-ask-claude:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(28,43,28,.3)}
+.btn-ask-claude:disabled{opacity:.5;cursor:default;transform:none}
+
+/* UNLOCK BANNER */
+.unlock-banner{background:linear-gradient(135deg,rgba(90,191,89,.12),rgba(240,120,48,.08));border:1.5px solid rgba(90,191,89,.3);border-radius:10px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px}
+.unlock-banner-icon{font-size:22px;flex-shrink:0}
+.unlock-banner-title{font-size:13px;font-weight:800;color:#1C2B1C;margin-bottom:3px}
+.unlock-banner-text{font-size:12.5px;color:#555;line-height:1.55}
+
+/* LOCKED LESSON */
+.locked-lesson-screen{display:flex;align-items:center;justify-content:center;height:100%;text-align:center;padding:60px 40px}
+.locked-inner{max-width:360px}
+.locked-icon{font-size:44px;margin-bottom:14px}
+.locked-title{font-size:18px;font-weight:900;color:#1C2B1C;margin-bottom:8px}
+.locked-text{font-size:13.5px;color:#888;line-height:1.65}
+.locked-prev{display:inline-block;margin-top:14px;background:#F07830;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+
+.nav-row{display:flex;align-items:center;justify-content:space-between;padding-top:14px;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.btn-nav{border:none;border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;font-weight:700;font-family:inherit}
+.btn-prev{background:#e8eaf0;color:#555}
+.btn-next{color:#fff;font-weight:800;border:none}
+.btn-done{border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;font-weight:800;font-family:inherit;background:#5ABF59;color:#fff;border:none;transition:all .2s}
+.btn-done.is-done{background:#d1fae5;color:#065f46;border:1.5px solid #5ABF59}
+
+#claude-panel{position:fixed;top:0;right:0;width:360px;height:100vh;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.12);display:flex;flex-direction:column;z-index:100;transform:translateX(100%);transition:transform .25s ease}
+#claude-panel.open{transform:translateX(0)}
+.cp-header{background:linear-gradient(135deg,#1C2B1C,#2A3D28);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.cp-title{display:flex;align-items:center;gap:9px}
+.cp-title-text{font-weight:800;font-size:14px}
+.cp-subtitle{font-size:10px;opacity:.55;margin-top:1px}
+.cp-close{background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:13px;font-family:inherit}
+.cp-context-bar{background:#f8fff8;border-bottom:1px solid #e0f0e0;padding:8px 14px;font-size:11px;color:#888;flex-shrink:0}
+.cp-context-bar span{color:#3A8A39;font-weight:600}
+.cp-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.cp-welcome{background:linear-gradient(135deg,rgba(90,191,89,.08),rgba(240,120,48,.06));border:1px solid rgba(90,191,89,.2);border-radius:10px;padding:13px 14px}
+.cp-welcome-title{font-size:12px;font-weight:800;color:#1C2B1C;margin-bottom:5px}
+.cp-welcome-text{font-size:12px;color:#666;line-height:1.6}
+.cp-suggestions{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.cp-suggestion{background:#fff;border:1px solid #d0e8d0;border-radius:7px;padding:7px 10px;font-size:11.5px;color:#3A8A39;cursor:pointer;text-align:left;font-family:inherit;transition:all .15s;line-height:1.4}
+.cp-suggestion:hover{background:#f0fff0;border-color:#5ABF59}
+.msg{display:flex;flex-direction:column;gap:3px;max-width:100%}
+.msg-user{align-items:flex-end}
+.msg-claude{align-items:flex-start}
+.msg-bubble{padding:9px 12px;border-radius:10px;font-size:13px;line-height:1.6;max-width:88%}
+.msg-user .msg-bubble{background:linear-gradient(135deg,#F07830,#e06820);color:#fff;border-bottom-right-radius:3px}
+.msg-claude .msg-bubble{background:#f5f6fa;color:#333;border-bottom-left-radius:3px;border:1px solid #eceef5;white-space:pre-wrap}
+.msg-label{font-size:10px;color:#bbb;padding:0 4px}
+.cp-typing{display:flex;align-items:center;gap:5px;padding:10px 12px;background:#f5f6fa;border-radius:10px;width:fit-content;border:1px solid #eceef5}
+.cp-typing span{width:6px;height:6px;background:#bbb;border-radius:50%;animation:bounce .9s infinite}
+.cp-typing span:nth-child(2){animation-delay:.2s}
+.cp-typing span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+.cp-input-row{border-top:1px solid #eceef5;padding:12px 14px;display:flex;gap:8px;flex-shrink:0;background:#fff}
+#cp-input{flex:1;border:1.5px solid #e0e3f0;border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;resize:none;min-height:40px;max-height:100px;line-height:1.5;transition:border-color .15s}
+#cp-input:focus{border-color:#F07830}
+.cp-send{background:linear-gradient(135deg,#F07830,#e06820);color:#fff;border:none;border-radius:8px;padding:9px 13px;cursor:pointer;font-size:16px;flex-shrink:0;transition:opacity .2s}
+.cp-send:disabled{opacity:.4;cursor:default}
+/* NAV BTNS */
+.btn-home{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;flex-shrink:0}
+.btn-home:hover,.btn-home.ah{background:rgba(255,255,255,.2)}
+.btn-bp{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.75);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;flex-shrink:0}
+.btn-bp:hover{background:rgba(255,255,255,.15);color:#fff}
+.btn-hbg{display:none;background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:8px;padding:7px 10px;font-size:16px;cursor:pointer;flex-shrink:0}
+/* HOME */
+.hw{padding:22px 26px;overflow-y:auto;flex:1}
+.hg{font-size:21px;font-weight:900;color:#1C2B1C;margin-bottom:3px}
+.hsubg{font-size:13px;color:#888;margin-bottom:20px}
+.hcont{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#F07830,#e06820);color:#fff;border:none;border-radius:10px;padding:11px 22px;font-size:13.5px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:26px;box-shadow:0 4px 12px rgba(240,120,48,.3);transition:all .2s}
+.hcont:hover{transform:translateY(-1px)}
+.hst{font-size:10px;font-weight:800;color:#bbb;letter-spacing:.8px;text-transform:uppercase;margin-bottom:11px;margin-top:20px}
+.mcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:10px}
+.mcard{background:#fff;border-radius:11px;padding:14px 15px;box-shadow:0 1px 6px rgba(0,0,0,.06);cursor:pointer;transition:all .18s;border:2px solid transparent}
+.mcard:hover:not(.mlk){transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.09)}
+.mlk{opacity:.4;cursor:default}
+.mcbar-bg{height:3px;background:#f0f0f0;border-radius:3px;margin-bottom:11px}
+.mcbar-fill{height:100%;border-radius:3px;transition:width .4s}
+.mctag{font-size:9px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:#bbb;margin-bottom:2px}
+.mcname{font-size:13px;font-weight:800;color:#1C2B1C;margin-bottom:8px}
+.mcprog{font-size:11px;color:#aaa;display:flex;justify-content:space-between}
+.ocards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.ocard{background:#fff;border-radius:10px;padding:13px 15px;box-shadow:0 1px 5px rgba(0,0,0,.05);border-left:3px solid #F07830;cursor:pointer;transition:border-color .15s}
+.ocard:hover{border-left-color:#e06820}
+.olbl{font-size:9.5px;font-weight:800;color:#F07830;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px}
+.oval{font-size:12.5px;color:#444;line-height:1.5;max-height:55px;overflow:hidden}
+/* BLUEPRINT */
+.bp-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.bp-mo{background:#fff;border-radius:16px;padding:32px;max-width:660px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);margin:auto}
+.bp-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid #eee;flex-wrap:wrap;gap:10px}
+.bp-ht{font-size:19px;font-weight:900;color:#1C2B1C}
+.bp-b{display:flex;gap:8px}
+.btn-pr{background:#1C2B1C;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-cbp{background:#f0f2f8;color:#555;border:none;border-radius:7px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+.bp-mod{margin-bottom:20px}
+.bp-mh{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;padding:4px 10px;border-radius:5px;color:#fff;margin-bottom:10px;display:inline-block}
+.bp-f{margin-bottom:9px;padding-left:11px;border-left:2px solid #f0f0f0}
+.bp-fl{font-size:9px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+.bp-fv{font-size:12.5px;color:#333;line-height:1.5;white-space:pre-wrap}
+/* CELEBRATION */
+.cel-ov{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:20px}
+.cel-bg{position:absolute;inset:0;background:rgba(0,0,0,.65)}
+.cel-c{position:relative;background:#fff;border-radius:20px;padding:40px 34px;max-width:410px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.25);animation:cIn .35s cubic-bezier(.34,1.56,.64,1);overflow:hidden}
+@keyframes cIn{from{transform:scale(.75);opacity:0}to{transform:scale(1);opacity:1}}
+.cel-em{font-size:52px;display:block;margin-bottom:10px}
+.cel-bd{display:inline-block;border-radius:20px;padding:4px 13px;font-size:10px;font-weight:800;letter-spacing:.5px;color:#fff;margin-bottom:13px}
+.cel-tt{font-size:23px;font-weight:900;color:#1C2B1C;margin-bottom:7px}
+.cel-tx{font-size:13px;color:#666;line-height:1.65;margin-bottom:20px}
+.cel-bs{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn-cn{background:linear-gradient(135deg,#F07830,#e06820);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit}
+.btn-cc{background:#f0f2f8;color:#666;border:none;border-radius:10px;padding:10px 15px;font-size:13px;cursor:pointer;font-family:inherit}
+.conf{position:absolute;pointer-events:none;inset:0;overflow:hidden}
+.cdot{position:absolute;width:7px;height:7px;border-radius:50%;animation:cdf 1.8s ease-in forwards}
+@keyframes cdf{0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(380px) rotate(540deg);opacity:0}}
+/* MOBILE */
+.mob-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:140}
+.mob-ov.vis{display:block}
+@media(max-width:680px){
+  .btn-hbg{display:flex;align-items:center}
+  .btn-claude-toggle span,.btn-bp span,.hlogo-sub{display:none}
+  #sidebar{position:fixed;left:-215px;top:0;height:100vh;z-index:150;transition:left .25s;box-shadow:4px 0 20px rgba(0,0,0,.15)}
+  #sidebar.mob-o{left:0}
+  #content,.hw{padding:14px}
+  .lesson-big-title{font-size:16px}
+  #claude-panel{width:100vw}
+  .mcards{grid-template-columns:1fr 1fr}
+  .ocards{grid-template-columns:1fr}
+  .bp-mo{padding:18px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div id="claude-panel">
+  <div class="cp-header">
+    <div class="cp-title">
+      <span style="font-size:20px">✦</span>
+      <div><div class="cp-title-text">Ask Claude</div><div class="cp-subtitle">Your membership coach — knows your work so far</div></div>
+    </div>
+    <button class="cp-close" onclick="togglePanel()">✕</button>
+  </div>
+  <div class="cp-context-bar">Coaching <span id="cp-context-lesson">—</span></div>
+  <div class="cp-messages" id="cp-messages"></div>
+  <div class="cp-input-row">
+    <textarea id="cp-input" placeholder="Ask anything about your membership…" rows="1"></textarea>
+    <button class="cp-send" id="cp-send" onclick="sendMessage()">↑</button>
+  </div>
+</div>
+
+<script>
+const SK_CTX  = "tme_sid_ctx";
+const SK_ANS  = "tme_sid_ans";
+const SK_DONE = "tme_sid_done";
+const SK_MOD  = "tme_sid_mod";
+
+// ── Modules ────────────────────────────────────────────────────
+const MODULES = [
+  {
+    id:"m0", tag:"Module 0", name:"Foundation", color:"#5ABF59", ready:true,
+    lessons:[
+      {
+        id:"cl1", tag:"Core Lesson 1", title:"Building the Perfect Membership", required:true,
+        learn:{
+          sections:[
+            {h:"The 3 Pillars of a World-Class Membership",items:["💰 Maximize Profitability — this is a business, and that's okay to say out loud","😌 Minimize Stress — if it feels like a treadmill, something's off","⚡ Maximize Efficiency — 20% of actions bring 80% of results"]},
+            {h:"Hobbyist vs. Business Owner",items:["Hobbyist: starts with energy, fizzles out, dabbles and hopes","Business Owner: long-term strategy, staircase growth, shows up consistently"]},
+            {h:"Design for 3 People",items:["YOU — what energizes you? What's your ideal role?","Your Business — front-end offer, backend, or standalone?","Your Audience — what transformation are they looking for?"]}
+          ],
+          mindset:"You're not building a product. You're building a transformation machine — for your members, your business, and your life."
+        },
+        tasks:[
+          {id:"lifestyle",label:"The kind of membership that would support my lifestyle is:",type:"textarea",ph:"Think about hours, energy, how you want to show up, what feels sustainable..."},
+          {id:"role",label:"My ideal role inside the membership is:",type:"textarea",ph:"Teaching live? Writing content behind the scenes? Curating? Running a team?"},
+          {id:"nonneg",label:"One non-negotiable I need in my business is:",type:"textarea",ph:"What won't you compromise on?"},
+          {id:"function",label:"My membership will function as a:",type:"radio",opts:["Front-end offer","Backend offer","Standalone product","Not sure yet"]},
+          {id:"support",label:"My membership will support my business by:",type:"textarea",ph:"How does it fit into your overall customer journey?"},
+          {id:"struggling",label:"My audience is currently struggling with:",type:"textarea",ph:"What keeps them stuck? What problems need ongoing solving?"},
+          {id:"transform",label:"The biggest transformation I want to help them achieve is:",type:"textarea",ph:"Paint the before and after picture..."},
+          {id:"howhelp",label:"I can help them get there by:",type:"textarea",ph:"What will you teach, share, or provide?"}
+        ],
+        prompts:[
+          {label:"Explore Your Role in the Membership",hint:"Not sure what role feels right? Copy this into ChatGPT.",template:"My target market are [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'm unsure what role I want to play in my membership. Can you give me 4–5 examples of how different membership models work for people who prefer teaching live vs. curating content behind the scenes? Make them relevant to my audience and area of focus."},
+          {label:"Uncover Your Audience's Biggest Pain Points",hint:"Want to go deeper on what your audience is really struggling with?",template:"My target market are [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nWhat are the 5 most pressing problems my audience needs ongoing help solving that my membership could address? Be specific and use the language my audience would actually use."}
+        ],
+        suggestions:["Does my membership idea make sense given who I'm serving?","What role should I play in my membership?","Help me think through what my audience is really struggling with"]
+      },
+      {
+        id:"cl2", tag:"Core Lesson 2", title:"Validating Your Idea", required:true,
+        learn:{
+          sections:[
+            {h:"The 3 Green Lights — you only need ONE ✅",items:["1. Solve an ongoing problem — can't be fixed overnight","2. Teach a skill — takes time, practice, and feedback","3. Make life easier or more convenient — saves time, reduces friction"]},
+            {h:"Real examples across all three",items:["Weight loss, dog training, relationships → Solve ongoing problems","Guitar, language, business growth → Teach a skill","Lesson plans, templates, meal kits → Make life easier"]}
+          ],
+          mindset:"You don't need a perfect idea. You just need a clear 'yes' to one of these questions. That's enough to start building momentum."
+        },
+        tasks:[
+          {id:"greenlight",label:"Which of the following applies to your membership idea?",type:"checkbox",opts:["It solves an ongoing problem","It teaches a skill","It makes life easier or more convenient"]},
+          {id:"whycheck",label:"Which did you check, and why is it a fit?",type:"textarea",ph:"What makes this ongoing vs. a one-time purchase?"},
+          {id:"helppeople",label:"My idea is to help people:",type:"textarea",ph:"Finish this clearly and simply..."},
+          {id:"maintrans",label:"The main transformation I want to deliver is:",type:"textarea",ph:"Before → After. What genuinely changes for your member?"},
+          {id:"fitwhyreason",label:"It's a fit for a membership (not a course) because:",type:"textarea",ph:"Why does this need to be ongoing?"}
+        ],
+        prompts:[
+          {label:"Brainstorm Membership Ideas for Your Audience",hint:"Feeling unsure if your idea is the right fit?",template:"My target market are [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nCan you brainstorm 5 membership ideas for my audience? For each:\n- State the idea clearly\n- Which green light it hits\n- Why it works as ongoing and not a one-time product"}
+        ],
+        suggestions:["Does my idea qualify for a green light?","Why does my idea need to be a membership and not a course?","Help me get clearer on the transformation I'm delivering"]
+      },
+      {
+        id:"cl3", tag:"Core Lesson 3", title:"The Membership Owner's Journey", required:true,
+        learn:{
+          sections:[
+            {h:"3 Growth Phases",items:["Phase 1: Launch — done is better than perfect","Phase 2: Grow to 2,000–3,000 — refine, run more launches","Phase 3: Scale — evergreen, only after conversions are consistent"]},
+            {h:"6 Stages of Membership Growth",items:["1. Build Your Base — messaging, positioning","2. Build Your Audience — grow your list","3. Build Your Membership — launch and deliver","4. Build Your Launch — refine, test, repeat","5. Build Your Community — connection retains members","6. Build Your Business — systems, hiring, delegation"]}
+          ],
+          mindset:"Don't compare your Chapter 1 to someone else's Chapter 20. Stay in your lane. Stay in motion. Your journey is your journey."
+        },
+        tasks:[
+          {id:"phase",label:"Which phase are you currently in?",type:"radio",opts:["Phase 1 — Launch","Phase 2 — Grow to 2,000–3,000","Phase 3 — Scale"]},
+          {id:"stage",label:"Which of the 6 stages deserves most of your attention right now?",type:"radio",opts:["Build Your Base","Build Your Audience","Build Your Membership","Build Your Launch","Build Your Community","Build Your Business"]},
+          {id:"phasewhy",label:"I believe I'm in this phase/stage because:",type:"textarea",ph:"What evidence or context puts you here?"},
+          {id:"focusnow",label:"The most important thing to focus on right now is:",type:"textarea",ph:"What's the ONE thing you should stop ignoring or start doing?"}
+        ],
+        prompts:[],
+        suggestions:["Am I in the right phase based on what I've shared?","What should I actually be focusing on right now?","How do I know when I'm ready to move to the next phase?"]
+      },
+      {
+        id:"cl4", tag:"Core Lesson 4", title:"Nailing Your Message", required:true,
+        learn:{
+          sections:[
+            {h:"Step 1: Discover Hot Buttons",items:["Go beyond demographics — understand what's in their hearts and minds","External challenges: time, money, resources, access","Internal challenges: self-doubt, confusion, feeling isolated","Go where they hang out: Facebook groups, YouTube comments, Reddit"]},
+            {h:"Step 2: The Messaging Map™",items:["LEFT (Without Membership): pain, frustration — Thinking / Feeling / Doing","RIGHT (With Membership): transformed, thriving — Thinking / Feeling / Doing"]},
+            {h:"Step 3: Your Positioning Statement",items:["\"I help [market] go from [problem 1], [2], [3] to [outcome 1], [2], [3]\"","Use it in bios, sales pages, intros — everywhere"]}
+          ],
+          mindset:"There is no 'perfect' statement. Start simple, refine later. Just take action."
+        },
+        tasks:[
+          {id:"ext_ch",label:"External challenges my audience faces:",type:"textarea",ph:"Time, money, resources, access, circumstances..."},
+          {id:"int_ch",label:"Internal challenges my audience faces:",type:"textarea",ph:"Self-doubt, confusion, feeling isolated, overwhelmed..."},
+          {id:"map_with",label:"WITHOUT my membership, my audience is…\n(Thinking / Feeling / Doing):",type:"textarea",ph:"Thinking: 'I'll never figure this out'\nFeeling: overwhelmed, stuck\nDoing: Googling constantly..."},
+          {id:"map_witho",label:"WITH my membership, my audience is…\n(Thinking / Feeling / Doing):",type:"textarea",ph:"Thinking: 'I've finally found what works'\nFeeling: confident, supported\nDoing: showing up consistently..."},
+          {id:"position",label:"My Positioning Statement:",type:"textarea",ph:"I help [market] go from [now 1], [now 2], and [now 3] to [future 1], [future 2], and [future 3]."}
+        ],
+        prompts:[
+          {label:"Build Your Detailed Audience Profile",hint:"Get a full picture of your ideal member.",template:"My target market are [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nHelp me create a detailed audience profile that includes:\n• Demographics\n• Lifestyle & Personal Details\n• Goals & Challenges (3 internal + 3 external)\n\nInclude a short summary paragraph I can use to describe my ideal member."},
+          {label:"Build Your Full Messaging Map™",hint:"Paste the output into your Messaging Map fields above.",template:"My target market are [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nBuild both sides of my Messaging Map™.\n\nWHERE THEY ARE NOW: What my audience is THINKING, FEELING, and DOING right now. Include extended situations.\n\nWHERE THEY WANT TO BE: The same from the perspective of someone who achieved the transformation."},
+          {label:"Write Your Positioning Statement",hint:"Stuck on wording? Paste your Messaging Map in and get options.",template:"My target market are [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nWrite 3 versions of:\nI help [market] go from [now 1], [now 2], [now 3] to [future 1], [future 2], [future 3].\n\nMessaging Map: [PASTE YOUR MESSAGING MAP HERE]"}
+        ],
+        suggestions:["Can you review my positioning statement?","Does my messaging map feel right for my audience?","Help me find stronger before and after language"]
+      },
+      {
+        id:"ddl1", tag:"Deep Dive 1", title:"6 Reasons Someone Joins Your Membership", required:false,
+        learn:{
+          sections:[
+            {h:"The 6 Primary Membership Motivators",items:["🆘 Need — real, ongoing problem to solve","🎯 Mastery — want to go deeper and keep improving","👥 Community — want to connect with people who 'get it'","❤️ Want — simply desire what you're offering","⚡ Luxury / Convenience — saves time, reduces friction","🎬 Entertainment — immersive, fun, creative content"]},
+            {h:"You only need to claim ONE primary",items:["Everything flows from this — offer, content, messaging, retention","Most memberships have a primary + secondary motivator"]}
+          ],
+          mindset:"When you understand which category your membership fits, everything becomes clearer: your offer, your content, your messaging — even your retention strategies."
+        },
+        tasks:[
+          {id:"primary_r",label:"Primary reason someone would join my membership:",type:"radio",opts:["Need","Mastery","Community","Want","Luxury or Convenience","Entertainment"]},
+          {id:"primary_why",label:"Why this is the primary reason:",type:"textarea",ph:"How does your membership naturally fit this motivation?"},
+          {id:"second_r",label:"Secondary reason someone would join:",type:"radio",opts:["Need","Mastery","Community","Want","Luxury or Convenience","Entertainment"]},
+          {id:"second_why",label:"Why this is the secondary reason:",type:"textarea",ph:"How does this show up in your offer?"}
+        ],
+        prompts:[],
+        suggestions:["Which category do you think my membership fits?","How does my primary motivator affect what I include?","What retention strategies work best for my category?"]
+      },
+      {
+        id:"ddl2", tag:"Deep Dive 2", title:"Circle of Awesomeness™", required:false,
+        learn:{
+          sections:[
+            {h:"The 3-Step Cycle",items:["1. Make the Sale — the starting point, not the finish line","2. Help Them Get a Result — small wins count","3. Share the Story — your most powerful marketing tool"]},
+            {h:"Why Small Wins Matter Most",items:["Early wins are more relatable than massive transformations","First post written. First sale made. One month consistent.","Story → new member → result → new story. The cycle repeats."]}
+          ],
+          mindset:"The best marketing strategy is simply helping people succeed. Let that be your north star."
+        },
+        tasks:[
+          {id:"first_result",label:"The first result I want my members to achieve is:",type:"textarea",ph:"What's the first small, meaningful win?"},
+          {id:"story_sys",label:"How I'll collect member stories and wins:",type:"textarea",ph:"Google Doc? Airtable? Community prompts? Start simple."},
+          {id:"exist_wins",label:"Wins I've already created (if serving people now):",type:"textarea",ph:"Any results or transformations — tiny ones count."},
+          {id:"coa_template",label:"My story collection template:",type:"textarea",ph:"Use the ChatGPT prompt below, then paste and edit here..."}
+        ],
+        prompts:[
+          {label:"Build Your Story Collection Template",hint:"Create a repeatable system for capturing member wins.",template:"My target market are [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nCreate a simple, repeatable template for collecting Circle of Awesomeness™ stories. Capture:\n• Stage / type of win\n• What they struggled with before\n• The result achieved\n• What changed after\n• Spot for screenshot or quote"},
+          {label:"Turn a Member Win Into a Marketing Story",hint:"Got a win? Turn it into a testimonial, email, or social post.",template:"My target market are [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nHelp me write a Circle of Awesomeness™ marketing story:\n• Before: [CHALLENGE]\n• Result: [WIN]\n• After: [TRANSFORMATION]\n• What helped: [RESOURCE]\n\nWarm, encouraging tone — under 150 words."}
+        ],
+        suggestions:["What's a realistic first win for my members?","How should I start collecting stories when just getting started?","Help me turn this win into a story: [describe a win]"]
+      }
+    ]
+  },
+  {
+    id:"m1", tag:"Module 1", name:"Audience", color:"#F07830", ready:true,
+    lessons:[
+      {
+        id:"cl1", tag:"Core Lesson 1", title:"Build and Grow Your Audience and Your List", required:true,
+        learn:{
+          sections:[
+            {h:"The 3 Core Audience Growth Methods", items:["🌱 Free — organic, content-based growth (this is where we start)","💰 Paid — using advertising to grow quickly","🤝 Borrowed — tapping into other people's audiences"]},
+            {h:"The Power of One Platform", items:["Pick ONE platform — don't spread yourself too thin","Create content your audience finds valuable","Publish consistently — stick to a regular schedule","Engage — reply, start conversations, build relationships"]}
+          ],
+          mindset:"There's a direct connection between the size of your audience and the size of your business. Audience growth never stops — it fuels everything."
+        },
+        tasks:[
+          {id:"platform", label:"My primary platform (the one I'll focus all free traffic efforts on):", type:"radio", opts:["Instagram","Facebook","YouTube","Pinterest","LinkedIn","TikTok","Podcast","Blog / SEO"]},
+          {id:"platform_why", label:"Why this platform is the right fit for my audience:", type:"textarea", ph:"Where does your audience actually hang out? What made you choose this one?"},
+          {id:"publish_days", label:"I will consistently publish on these day(s):", type:"checkbox", opts:["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]},
+          {id:"content_type", label:"The type of content I'll create on this platform:", type:"textarea", ph:"Videos? Written posts? Short-form reels? Podcasts? Be specific about the format."}
+        ],
+        prompts:[
+          {label:"Find Where Your Audience Hangs Out", hint:"Use this to identify the best platforms and communities for your specific audience.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nMy target audience is [MARKET].\nCan you help me brainstorm where they might be spending time online and offline?\nPlease include:\n• Specific platforms they're likely using (social media, forums, websites)\n• Communities or influencers they may follow\n• Types of content they typically engage with (videos, blogs, podcasts, etc.)\n• Any real-world locations or events where they might gather"}
+        ],
+        suggestions:["Which platform makes the most sense for my audience?","How do I stay consistent when life gets busy?","What kind of content works best on my chosen platform?"]
+      },
+      {
+        id:"cl2", tag:"Core Lesson 2", title:"Mapping Out Your 12-Month Content Calendar", required:true,
+        learn:{
+          sections:[
+            {h:"The Problem-Solution Framework", items:["Your audience is always searching for solutions to their problems","Brainstorm 13 problems your audience faces related to your topic","For each problem, create 4 solution-focused content ideas","This gives you 52 pieces of content — a full year's worth!"]},
+            {h:"Why This Works", items:["People search for answers to real problems — your content becomes the answer","You become the go-to expert in your space","Content creation stops feeling hard when you have a clear framework","Every piece of content leads naturally toward your membership"]}
+          ],
+          mindset:"It's not about having a ton of ideas — it's about having a solid strategy to generate ideas that solve real problems."
+        },
+        tasks:[
+          {id:"problems", label:"13 problems my audience faces (one per line):", type:"textarea", ph:"1. They don't know where to start\n2. They feel overwhelmed by options\n3. They struggle to stay consistent\n... (keep going to 13!)"},
+          {id:"solutions", label:"My Problem-Solution content plan (paste your ChatGPT output here and edit it to make it yours):", type:"textarea", ph:"Problem 1: [problem]\n- Solution 1:\n- Solution 2:\n- Solution 3:\n- Solution 4:\n\nProblem 2: [problem]..."}
+        ],
+        prompts:[
+          {label:"Generate Your Full 12-Month Content Plan", hint:"This prompt gives you 13 problems + 4 solutions each — a full year of content in one go.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'm creating content for [MARKET] around the topic of [FOCUS].\nPlease help me brainstorm 13 of the most common problems or challenges this audience faces related to this topic.\nThen, for each problem, give me 4 solution-focused content ideas.\nThese could be tips, tools, templates, encouragement, or quick wins — anything that would help them make progress.\n\nBONUS: Organize the results in a table format with:\n• One row per problem\n• Each row showing the 4 solutions side-by-side"}
+        ],
+        suggestions:["Can you help me brainstorm 13 problems for my specific audience?","Which of my content ideas would perform best on my platform?","How do I turn a problem-solution idea into an actual post?"]
+      },
+      {
+        id:"cl3", tag:"Core Lesson 3", title:"Creating the Ultimate List Builder", required:true,
+        learn:{
+          sections:[
+            {h:"Why Your Email List Matters", items:["Social media gets you attention — email is where the relationship deepens","You don't own your social audience — you do own your email list","The goal: get attention → convert attention → keep attention"]},
+            {h:"What Makes a Great List Builder", items:["✅ Solves a specific problem your audience faces","✅ Has a clear, obvious benefit","✅ Delivers a quick win — immediate value","✅ Positions you as the expert in your space"]},
+            {h:"3 Categories of List Builders", items:["📈 Growth — helps people grow intellectually, emotionally, or spiritually","💰 Saving — saves time, money, or effort (turns 10 steps into 3)","🎁 Other — anything else that delivers clear value"]},
+            {h:"Stu's Favourite List Builders", items:["The Curated PDF — groups together helpful resources and tools","The Answer Guide — FAQs with clear, concise answers (next lesson!)"]}
+          ],
+          mindset:"Building your email list isn't about growing numbers — it's about nurturing real relationships that lead to lasting trust and loyalty."
+        },
+        tasks:[
+          {id:"listbuilder_type", label:"The type of list builder I'll create:", type:"radio", opts:["Answer Guide","Curated PDF","Checklist","Quiz","Workbook","Mini-course","Challenge","Other"]},
+          {id:"listbuilder_topic", label:"My list builder will help my audience:", type:"textarea", ph:"What specific problem does it solve? What quick win does it deliver?"},
+          {id:"listbuilder_title", label:"A working title for my list builder:", type:"textarea", ph:"e.g. '10 Questions Every New Homeschooler Asks (And the Answers You Actually Need)'"},
+          {id:"promote_where", label:"Where I'll promote my list builder:", type:"textarea", ph:"Website pop-up? Instagram bio? At the end of every blog post? Be specific."}
+        ],
+        prompts:[],
+        suggestions:["What type of list builder makes the most sense for my audience?","Help me come up with a compelling title for my list builder","How do I promote my list builder without feeling salesy?"]
+      },
+      {
+        id:"cl4", tag:"Core Lesson 4", title:"The Answer Guide", required:true,
+        learn:{
+          sections:[
+            {h:"What Is an Answer Guide?", items:["A simple collection of the top 10 questions your audience asks","Each question answered clearly and concisely — no fluff","Can start as a Google Doc — design comes later","Works for you 24/7 once it's created"]},
+            {h:"Why It Works So Well", items:["Builds immediate trust — you're solving real problems upfront","Easy to create and share across every platform","Long-term value — stays relevant as long as the questions do","Positions you as the go-to expert from the very first interaction"]},
+            {h:"How to Create Yours", items:["Step 1: Brainstorm your top 10 questions (from Q&As, DMs, social media)","Step 2: Answer each one simply and concisely","Step 3: Compile into a Google Doc — bold the questions, answers underneath","Step 4: Pretty it up later — version 1 just needs to exist"]}
+          ],
+          mindset:"Perfection is the enemy of progress. Keep it simple and focus on delivering real value to your audience."
+        },
+        tasks:[
+          {id:"top10q", label:"My top 10 audience questions (use the ChatGPT prompt below to brainstorm):", type:"textarea", ph:"1.\n2.\n3.\n4.\n5.\n6.\n7.\n8.\n9.\n10."},
+          {id:"answers", label:"My answers to each question (paste and edit your ChatGPT output):", type:"textarea", ph:"Q1: [question]\nA: [your answer in your own voice]\n\nQ2: [question]\nA: [your answer]..."},
+          {id:"guide_status", label:"Where I'm at with my Answer Guide:", type:"radio", opts:["Not started yet","Questions brainstormed","Answers drafted","Google Doc created","Designed and ready to share"]}
+        ],
+        prompts:[
+          {label:"Brainstorm Your Top 10 Audience Questions", hint:"Use this to generate the questions for your Answer Guide — then add your own voice to the answers.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nMy membership is focused on [FOCUS].\nMy audience includes [MARKET].\n\nCan you help me brainstorm the top 10 most common questions they're likely asking about this topic?\n\nThese are some results from my market research (from my Messaging Map™ — the WITHOUT column):\n[PASTE YOUR WITHOUT MEMBERSHIP ANSWERS FROM MODULE 0 HERE]\n\nPlease format them as a clean numbered list I can use to build my Answer Guide."},
+          {label:"Draft Answers for Your Answer Guide", hint:"Once you have your 10 questions, use this to get first-draft answers you can rewrite in your own voice.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nHere are the top 10 questions my audience is asking:\n[PASTE YOUR 10 QUESTIONS HERE]\n\nPlease write a clear, concise, helpful answer for each question — written in a warm, encouraging tone that positions me as a trusted expert. Keep each answer to 3–5 sentences. Format as Q&A."}
+        ],
+        suggestions:["What are the most common questions for my specific audience?","Can you help me write my answers in a warmer, more personal tone?","How long should my Answer Guide be to feel valuable but not overwhelming?"]
+      }
+    ]
+  },
+  {
+    id:"m2", tag:"Module 2", name:"Content", color:"#D91E8C", ready:true,
+    lessons:[
+      {
+        id:"cl1", tag:"Core Lesson 1", title:"The 4 Membership Types", required:true,
+        learn:{
+          sections:[
+            {h:"The 4 Types of Memberships", items:["📦 Product-Based — a physical or digital product delivered monthly (BarkBox, Dollar Shave Club)","🛎️ Service-Based — a recurring service at a flat fee (massage, car wash, design services)","👥 Community-Based — paying to belong to a group of like-minded people (golf clubs, masterminds)","📚 Information-Based — teaching a skill or solving a problem (guitar, parenting, AI in business)"]},
+            {h:"The 6 Membership Models", items:["📰 Publisher — monthly fresh content, like an online magazine","📦 UPS — deliver a package of content on a schedule (physical or digital)","🎓 Coaching — hands-on guidance and coaching environment","👥 Community — shared-interest gathering space","💧 Drip — sequential content delivered over months or years","🔀 Combo — mix and match from the other five"]}
+          ],
+          mindset:"Your model doesn't have to be perfect or final. It will likely evolve as your membership grows. Right now, choose the structure that feels like the best fit."
+        },
+        tasks:[
+          {id:"mem_type", label:"My membership type:", type:"radio", opts:["Product-Based","Service-Based","Community-Based","Information-Based"]},
+          {id:"type_why", label:"This type makes sense for me because:", type:"textarea", ph:"What about this type fits how you want to show up and deliver value?"},
+          {id:"mem_model", label:"My membership model:", type:"radio", opts:["Publisher","UPS","Coaching","Community","Drip","Combo"]},
+          {id:"model_why", label:"This model makes sense for my members because:", type:"textarea", ph:"How will this model help your members get results? How does it fit your lifestyle?"}
+        ],
+        prompts:[],
+        suggestions:["Which membership model fits my lifestyle and how I want to show up?","What's the difference between the Publisher and Drip model for my situation?","Can you help me think through which type fits my membership idea?"]
+      },
+      {
+        id:"cl2", tag:"Core Lesson 2", title:"#1 Reason Why People Cancel", required:true,
+        learn:{
+          sections:[
+            {h:"Overwhelm kills memberships", items:["The #1 reason people cancel isn't the price — it's overwhelm","Members can't find what they need, don't know what to do next, and feel behind","They feel bad spending money and not getting anywhere — so they leave","More content does NOT equal more value. Progress equals value."]},
+            {h:"Real examples", items:["Paul Evans — stripped everything except PowerPoint templates for youth pastors. Retention increased.","Jamie Bright — simplified to one strategy per month for photographers. Content consumption and client wins skyrocketed."]},
+            {h:"The fix", items:["Design for results, not volume","Give members a clear path to follow (that's next lesson — the Success Path™)","Prioritize quick wins over comprehensive libraries"]}
+          ],
+          mindset:"Your job isn't to teach everything — it's to guide people forward. Progress builds confidence. Confidence builds momentum. Momentum builds long-term members."
+        },
+        tasks:[
+          {id:"overwhelm_audit", label:"If I'm honest, where might my membership create overwhelm right now?", type:"textarea", ph:"Too much content? No clear starting point? Members not sure what to do next?"},
+          {id:"one_thing", label:"If members could only keep ONE thing from my membership, what would it be?", type:"textarea", ph:"This is your most valuable asset — the thing that solves their real problem most directly."}
+        ],
+        prompts:[],
+        suggestions:["How do I know if my membership is overwhelming my members?","What's the right amount of content to include each month?","How did other memberships simplify successfully?"]
+      },
+      {
+        id:"cl3", tag:"Core Lesson 3", title:"The Success Path™", required:true,
+        learn:{
+          sections:[
+            {h:"What is the Success Path™?", items:["A built-in measuring stick of member success","Breaks the journey into 3–7 clearly defined stages (5 is the sweet spot)","Impacts retention, marketing, community, onboarding, and celebrations","It's a work in progress — version 1.0 is all you need to start"]},
+            {h:"The 4 Elements of a Success Path™", items:["📍 Stages — 3 to 7 named stages that define the journey","📝 Descriptions — what the member is thinking, feeling, doing at each stage","✅ Milestones — clear yes/no checkpoints (not 'feels confident' — 'has written their positioning statement')","⚡ Action Items — specific tasks that support each milestone"]}
+          ],
+          mindset:"Small wins deserve big celebrations. The Success Path™ helps your members see their progress — and that's what keeps them moving forward."
+        },
+        tasks:[
+          {id:"path_name", label:"The name of my Success Path™:", type:"textarea", ph:"e.g. 'The Confident Homeschool Journey' or 'The Portrait Photographer's Roadmap'"},
+          {id:"num_stages", label:"How many stages will my Success Path™ have?", type:"radio", opts:["3 stages","4 stages","5 stages (recommended)","6 stages","7 stages"]},
+          {id:"stages", label:"My stage names and descriptions (paste your ChatGPT output here, then make it yours):", type:"textarea", ph:"Stage 1: [Name]\nDescription: [What are they thinking, feeling, doing at this stage?]\nMilestones:\n- \nAction Items:\n- \n\nStage 2: [Name]..."},
+        ],
+        prompts:[
+          {label:"Map Out Your Full Success Path™", hint:"Use this to generate all stages, descriptions, milestones and action items in one go.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI would like your help mapping out a Success Path™ that takes my members from where they are now to [describe the final transformation].\n\nI would like 5 stages.\n\nPlease include for each stage:\n• The stage name\n• A description of what the member is thinking, feeling, and doing at this stage\n• 3 key milestones (specific, yes/no checkpoints)\n• 2–3 action items to support each milestone\n\nAssume members are starting from scratch.\n\nDo you understand?"}
+        ],
+        suggestions:["Can you help me name my Success Path™ stages in a way that feels exciting and clear?","How do I write good milestones — what makes them specific enough?","Can you review my stage descriptions and make them feel more relatable?"]
+      },
+      {
+        id:"cl4", tag:"Core Lesson 4", title:"3 Types of Must-Have Membership Content", required:true,
+        learn:{
+          sections:[
+            {h:"1. Onboarding Content", items:["The first experience new members have — one of the most important","Positive first 30 days triples lifetime value","Guide members through intentional steps — not an overwhelming menu","Welcome video → profile setup → short survey → clear next step"]},
+            {h:"2. Core Content", items:["Built around your Success Path™ — gets everyone aligned","One video per stage explaining: what they're thinking/feeling, what to focus on, what progress looks like","Intro video + one per stage + closing/summary video"]},
+            {h:"3. Monthly Content", items:["Your ongoing deliverables — what moves members forward month after month","Examples: masterclasses, live Q&As, resource drops, challenges, workshops","Keep it to 60 minutes of learning per week max — members need time to implement","Match content type and volume to your membership model"]}
+          ],
+          mindset:"Your content isn't a library — it's a roadmap. Keep it focused on creating clarity and quick wins. That's how members build momentum and stick around."
+        },
+        tasks:[
+          {id:"onboard_plan", label:"My onboarding experience will include:", type:"textarea", ph:"Welcome video? Survey? 'Start here' guide? Getting started steps? What's the first thing a new member will see and do?"},
+          {id:"core_content_plan", label:"My core content plan (one video per Success Path™ stage):", type:"textarea", ph:"Intro video → Stage 1 video → Stage 2 video... → Summary video\nWhat's the key message for each?"},
+          {id:"monthly_deliverable", label:"My monthly deliverable(s):", type:"textarea", ph:"What will members receive each month? (e.g. one masterclass + one live Q&A). Keep it simple — 1-2 to start."}
+        ],
+        prompts:[],
+        suggestions:["What should go in my welcome video to set the right tone?","How do I structure my core content videos so they're short but impactful?","What monthly deliverable makes the most sense for my model and audience?"]
+      },
+      {
+        id:"ddl1", tag:"Deep Dive 1", title:"Creating Your Onboarding Content", required:false,
+        learn:{
+          sections:[
+            {h:"3 Objectives of Great Onboarding", items:["🎯 Clarity — help members identify where they are on the Success Path™, eliminate 'where do I start?'","🤝 Connection — one meaningful connection can change everything; prompt introductions, use a member directory","🏆 Progress — help new members get a win within their first week (complete a checklist, post in community, download a template)"]},
+            {h:"Tools for each objective", items:["Clarity: intake survey, 'Getting Started' steps, stage-specific next steps","Connection: member directory, guided introduction post, welcome team","Progress: 5-day challenge, first assignment, community post prompt"]}
+          ],
+          mindset:"Clarity reduces anxiety. Connection builds trust. Progress sparks commitment. Get these three things right in your onboarding, and everything else gets easier."
+        },
+        tasks:[
+          {id:"clarity_plan", label:"How I'll help new members find their starting point:", type:"textarea", ph:"Intake survey? 'Start Here' page? Pointing them to their Success Path™ stage?"},
+          {id:"connection_plan", label:"How I'll help new members make their first connection:", type:"textarea", ph:"Welcome post questions? Member directory? Welcome team? Introduction prompt?"},
+          {id:"progress_plan", label:"The first win I'll help new members get within their first week:", type:"textarea", ph:"Complete a checklist? Download a template? Post in the community? Finish one lesson?"},
+          {id:"welcome_post", label:"My welcome post (use the ChatGPT prompt below, then rewrite it in your voice):", type:"textarea", ph:"Paste and edit your welcome message here — make sure it sounds like YOU, not a template..."}
+        ],
+        prompts:[
+          {label:"Write Your Member Welcome Post", hint:"Use this to draft a warm, engaging welcome post for your community.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'd like to write a warm and welcoming kickoff post for my membership community. I'd like the tone to be [warm / encouraging / playful — customize this].\n\nMy membership is called [YOUR MEMBERSHIP NAME]. It's designed to help [MARKET] achieve [describe the transformation].\n\nThis post should:\n• Welcome members into the community\n• Give them 3 simple action steps to get engaged\n• Include 2–3 intro questions they can answer in the comments to build connection\n• Include a bonus action (like posting a photo or sharing a win)\n\nPlease keep it warm and real — not corporate or stiff."},
+          {label:"Write Your Welcome Video Script", hint:"Use this to create a script for your member welcome video.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'd like to create a warm and engaging welcome video script for new members of my membership called [YOUR MEMBERSHIP NAME].\n\nMy membership helps [MARKET] go from [the 'without' state] to [the 'with' state].\n\nThe script should:\n• Welcome them warmly and make them feel they made the right decision\n• Give a brief overview of what they'll achieve\n• Tell them exactly what to do first (e.g. complete their profile, watch the Getting Started video)\n• Encourage patience and celebrate small progress\n• Be under 2 minutes when read aloud\n\nTone: [warm / conversational / encouraging — customize this]"},
+          {label:"Create a 5-Day Quick Win Challenge", hint:"Give new members momentum in their first week with a simple challenge.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'd like to create a 5-day quick win challenge for my new members to help them build momentum during their first week.\n\nMy membership is called [YOUR MEMBERSHIP NAME] and helps [MARKET] achieve [transformation].\n\nPlease create a 5-day challenge using this structure:\n• Day 1: Reflect\n• Day 2: Reset\n• Day 3: Refresh\n• Day 4: Reserve\n• Day 5: Recommit\n\nFor each day include:\n• A renamed focus that fits my audience\n• 2 action steps\n• A community post prompt (e.g. 'Start your post with...')\n• A hashtag suggestion\n\nTone: [encouraging / nurturing / energetic — customize this]"}
+        ],
+        suggestions:["What should my intake survey ask new members?","How long should my onboarding sequence be?","Can you review my welcome post and make it sound more like me?"]
+      },
+      {
+        id:"ddl2", tag:"Deep Dive 2", title:"Creating Your Core Content", required:false,
+        learn:{
+          sections:[
+            {h:"What Core Content Does", items:["Gets everyone aligned on the same transformation","Helps members understand the full journey ahead","Tells them where they are right now and what to focus on","Prevents overwhelm from random content browsing"]},
+            {h:"The Core Content Formula (5-stage example)", items:["Lesson 1: Introduction — overview of your Success Path™ and how to use it","Lessons 2–6: One video per stage — what they're thinking/feeling, their challenge, their next focus","Lesson 7: Summary/wrap-up — recap, motivation, clear next step","Each video: under 2 minutes, warm and specific to that stage"]}
+          ],
+          mindset:"Your core content isn't about teaching everything — it's about helping people know where they are, what matters now, and where they're headed. Clarity wins. Direction wins. Progress wins."
+        },
+        tasks:[
+          {id:"intro_script", label:"My core content intro video script (draft):", type:"textarea", ph:"Overview of your Success Path™. How to use these videos. Where to start. Keep it under 2 minutes."},
+          {id:"stage_scripts", label:"My stage video scripts (one per stage — paste your ChatGPT output then edit):", type:"textarea", ph:"Stage 1 script:\n[Welcome → acknowledge where they're at → what to focus on → mistake to avoid → call to action]\n\nStage 2 script:..."},
+          {id:"summary_script", label:"My summary/wrap-up video script:", type:"textarea", ph:"Recap the Success Path™, briefly revisit each stage, tell them what to do next, leave them motivated and excited."}
+        ],
+        prompts:[
+          {label:"Write All Your Core Content Video Scripts", hint:"This generates scripts for your intro, every stage, and your wrap-up in one prompt.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nMy membership helps people go from [starting point] to [final transformation] through a Success Path™ called [SUCCESS PATH NAME] with [NUMBER] stages.\n\nPlease write scripts for:\n\n1. INTRODUCTION VIDEO — Overview of the Success Path™, how members can use the stage videos to find where they are, and what knowing that will guide them to do next.\n\n2. STAGE VIDEOS — One script per stage. Each script should:\n• Welcome members to the stage\n• Acknowledge where they're at and how they may be feeling\n• Explain what to focus on at this stage\n• Share 1–2 mistakes to avoid\n• End with an encouraging call to action\n\nMy stages are:\n[PASTE YOUR STAGE NAMES AND DESCRIPTIONS HERE]\n\n3. SUMMARY VIDEO — Recap the full path, briefly revisit each stage, tell them what to do next, and leave them excited about the journey ahead.\n\nTone: [warm / conversational / encouraging — customize]. Keep each script under 2 minutes."}
+        ],
+        suggestions:["How long should each core content video be?","Can you help me make my stage descriptions sound more relatable and less clinical?","What's the best way to record these videos — camera on or slides?"]
+      },
+      {
+        id:"ddl3", tag:"Deep Dive 3", title:"Creating Your Monthly Content", required:false,
+        learn:{
+          sections:[
+            {h:"Monthly vs Core Content", items:["Core content = the map (where they are, where they're going)","Monthly content = the fuel (what moves them forward each month)","Monthly content should support your Success Path™ stages"]},
+            {h:"Two Ways to Structure Monthly Content", items:["Option 1: Different content for different stages — great when most members cluster at one stage","Option 2: One deliverable for everyone + stage-specific prompts at the end — simpler to produce"]},
+            {h:"The Golden Rule", items:["One primary deliverable per week","Max 60–90 minutes of learning per week — members need time to implement","Start with 1–2 deliverables and only add more when members need it"]}
+          ],
+          mindset:"Don't try to impress your members with more. Help them make progress with less — and they'll stick around longer."
+        },
+        tasks:[
+          {id:"del1", label:"Monthly Deliverable 1 — Title, description, and format:", type:"textarea", ph:"Title: e.g. Monthly Masterclass\nDescription: A 45-min training on one focused topic aligned with the Success Path™\nFormat: Pre-recorded video + PDF summary\nAlternate formats: Audio, transcript"},
+          {id:"del2", label:"Monthly Deliverable 2 — Title, description, and format:", type:"textarea", ph:"Title: e.g. Live Q&A Call\nDescription: 60-min open Zoom session for member questions\nFormat: Live video\nAlternate formats: Replay recording, audio"},
+          {id:"del3", label:"Monthly Deliverable 3 (optional) — Title, description, and format:", type:"textarea", ph:"Title:\nDescription:\nFormat:\nAlternate formats:"},
+          {id:"structure_choice", label:"How I'll structure my monthly content:", type:"radio", opts:["Different content for different Success Path™ stages","One deliverable for everyone + stage-specific prompts","Still figuring this out"]}
+        ],
+        prompts:[],
+        suggestions:["What monthly deliverables work best for my membership model?","How do I decide which stage to focus my monthly content on?","How do I repackage content so members can consume it in different formats?"]
+      },
+      {
+        id:"ddl4", tag:"Deep Dive 4", title:"Mapping Out Your 12-Month Content Calendar", required:false,
+        learn:{
+          sections:[
+            {h:"The Batch-Friendly Content Model", items:["One main deliverable per week = four drops per month = just 12 ideas per deliverable for the whole year","Batch-produce 3+ months of content in one sitting to stay ahead","3 of 4 deliverables can be pre-recorded — only 1 needs to be live"]},
+            {h:"Create Templates for Each Deliverable", items:["Opening hook or theme","Main lesson or takeaway","Action step or prompt","Optional: reflection, tool, or resource","Consistent structure = faster production every month"]}
+          ],
+          mindset:"Planning a year of content doesn't take a year — it takes a focused few hours. When you simplify the system, you give yourself back the most precious resource: time."
+        },
+        tasks:[
+          {id:"calendar", label:"My 12-month content calendar (use the ChatGPT prompt below, then customise):", type:"textarea", ph:"Jan: Topic/focus — Deliverable 1: — Deliverable 2:\nFeb: Topic/focus — Deliverable 1: — Deliverable 2:\nMar: ...\n(Continue for all 12 months)"},
+          {id:"templates", label:"My content templates for each deliverable (paste and edit from ChatGPT):", type:"textarea", ph:"Masterclass template:\n1. Opening hook\n2. Why this matters\n3. Core teaching\n4. Mistakes to avoid\n5. Action step\n6. Encouraging close\n\nQ&A template: ..."},
+          {id:"batch_plan", label:"My batching plan — when I'll create content in advance:", type:"textarea", ph:"e.g. I'll batch 3 months of masterclasses every quarter in the first week of the month. I'll record all January–March content in December."}
+        ],
+        prompts:[
+          {label:"Generate Your 12-Month Content Calendar", hint:"Use this to map out a full year of content aligned with your Success Path™.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI am creating a 12-month content calendar for my membership called [YOUR MEMBERSHIP NAME].\n\nMy monthly deliverables are:\n[LIST YOUR 1–4 DELIVERABLES HERE WITH SHORT DESCRIPTIONS]\n\nBased on my Success Path™ called [SUCCESS PATH NAME], please map out 12 months of monthly content and suggest a topic or focus for each month.\n\nMy Success Path™ stages are:\n[PASTE YOUR STAGE NAMES AND DESCRIPTIONS HERE]\n\nThe goal is to align each month's content with where members are in their journey, progressing naturally through the stages.\n\nDo you understand?"},
+          {label:"Create Reusable Templates for Each Deliverable", hint:"Get a repeatable outline for each monthly deliverable so you can batch content faster.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI want to create a repeatable template for each of my monthly deliverables for my membership called [YOUR MEMBERSHIP NAME].\n\nMy deliverables are:\n[LIST YOUR DELIVERABLES HERE]\n\nPlease write a simple, reusable structure or outline for each deliverable that I can follow every month to batch my content efficiently.\n\nKeep it aligned with my audience ([MARKET]), tone ([warm / encouraging / etc.]), and the goal of helping them move through my Success Path™ called [SUCCESS PATH NAME]."}
+        ],
+        suggestions:["Can you help me come up with 12 masterclass topics for my membership?","How far in advance should I batch my content?","What's the best way to stay consistent with content production each month?"]
+      }
+    ]
+  },
+  {
+    id:"m3", tag:"Module 3", name:"Marketing", color:"#14C4CC", ready:true,
+    lessons:[
+      {
+        id:"cl1", tag:"Core Lesson 1", title:"What Do You Stand For?", required:true,
+        learn:{
+          sections:[
+            {h:"Why Standing for Something Matters", items:["If you try to please everyone, your messaging will be weak and ineffective","Standing for something magnetically attracts the right people — those who believe what you believe","Don't be afraid to be polarizing — you'll lose some, but you'll gain loyal ideal members","'Love me or hate me, there's no money in the middle.' — Jim Edwards"]},
+            {h:"How to Use Your Values in Marketing", items:["Your beliefs and values should show up in your content, marketing, and member experience","Take a clear stance on what you DO and DON'T believe — share it openly","Use 'anti-values' to reveal what you stand for — what you reject says as much as what you embrace"]}
+          ],
+          mindset:"Be confident in your beliefs and your ideal audience will be drawn to the authenticity you bring. Don't be afraid to show who you really are!"
+        },
+        tasks:[
+          {id:"top_values", label:"My top 5 core values (use the ChatGPT prompts below to explore):", type:"textarea", ph:"e.g. Simplicity, Growth, Empowerment, Community, Honesty\n\nFor each, write one sentence on what it means for how you show up..."},
+          {id:"beliefs", label:"3–5 beliefs or philosophies that guide how I run my business:", type:"textarea", ph:"e.g. 'I believe small, consistent actions are more powerful than big unsustainable ones'\n'I believe every member deserves a clear path, not just more content'"},
+          {id:"anti_values", label:"What I DON'T stand for (anti-values that reveal what I DO believe):", type:"textarea", ph:"e.g. I don't believe in hustle culture → I value sustainable, joyful business\nI don't believe in information dumping → I value clarity and quick wins"},
+          {id:"belief_statements", label:"My 'Here's what we believe' statements (bold, real, uniquely you):", type:"textarea", ph:"We believe...\nWe believe...\nWe believe...\n(Aim for 5–7 punchy statements you could put on your website or in your marketing)"},
+          {id:"about_paragraph", label:"My 'What I stand for' paragraph (for my website or About page):", type:"textarea", ph:"Use the ChatGPT prompt below to draft it, then rewrite it in your own voice..."}
+        ],
+        prompts:[
+          {label:"Discover Your Top 5 Core Values", hint:"Use this to uncover the values that should drive your brand and membership.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nHelp me identify the top 5 values that are most important to me in life and business.\n\nHere are a few things I care about: [ADD ANY IDEAS — or leave blank and ask Claude to suggest based on your audience and focus]\n\nFor each value, please:\n• Name the value\n• Explain what it means in the context of my membership and audience\n• Give one example of how it could show up in my marketing or member experience"},
+          {label:"Clarify What You Don't Stand For", hint:"Your anti-values reveal just as much as your values — use this to get clear on both.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nWhat trends, behaviours, or messages in my industry do I likely disagree with or want to push back against?\n\nPlease:\n1. Suggest 3–5 'anti-values' that don't align with my mission\n2. For each, explain what positive value it reveals about me\n3. Suggest how I could reference this in my marketing to attract the right people and repel the wrong ones"},
+          {label:"Write Your 'What We Believe' Statements + About Paragraph", hint:"Turn your values into bold, shareable belief statements and a paragraph for your website.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nBased on my values and beliefs, please help me write:\n\n1. A list of 6–8 bold 'Here's what we believe' statements — punchy, real, and uniquely mine. Start each with 'We believe...'\n\n2. A short paragraph (3–5 sentences) I could use on my website or About page that clearly communicates what I stand for, what I'm against, and who I'm for.\n\nUse a [warm / conversational / bold — customize this] tone."}
+        ],
+        suggestions:["Help me figure out what I truly stand for in my niche","What anti-values would resonate with my specific audience?","Can you review my belief statements and make them sound bolder and more like me?"]
+      },
+      {
+        id:"cl2", tag:"Core Lesson 2", title:"Membership Marketing Models", required:true,
+        learn:{
+          sections:[
+            {h:"Open Marketing Model", items:["Membership is always available — anyone can join at any time","Works best when your audience needs immediate access (e.g. pregnant moms, urgent problems)","Risk: no urgency = people procrastinate and forget","Fix: implement monthly urgency tactics like limited-time bonuses or deadline offers"]},
+            {h:"Closed Marketing Model", items:["Membership only opens a few times per year","Creates built-in urgency and scarcity — people can't just join whenever","Stu's experience: switching from open to closed grew enrollments from 125/month to 600–800 per promotion","2 promotions/year → 1,500–3,000 new members each time — with half the work"]}
+          ],
+          mindset:"Closed models create a focused marketing push that leads to massive growth in a short amount of time. It's all about anticipation and excitement."
+        },
+        tasks:[
+          {id:"model_choice", label:"My marketing model:", type:"radio", opts:["Open — always available to join","Closed — opens a limited number of times per year","Not decided yet"]},
+          {id:"model_why", label:"Why this model is the right fit for my audience and membership:", type:"textarea", ph:"Does your audience need immediate access? Do you want a focused launch push? What fits your energy and business stage?"},
+          {id:"open_promos", label:"If Open model — my 12 monthly urgency tactics or incentives (use the ChatGPT prompt below):", type:"textarea", ph:"Jan: [bonus or incentive + message angle]\nFeb: [bonus or incentive + message angle]\n... (continue for all 12 months)"},
+          {id:"closed_timing", label:"If Closed model — when I'll open enrollment (months + how many times per year):", type:"textarea", ph:"e.g. April and September — 2 times per year\nOr: January, May, and September — 3 times per year"}
+        ],
+        prompts:[
+          {label:"Plan 12 Months of Open Model Urgency Tactics", hint:"If you're using an open model, use this to generate urgency ideas for every month of the year.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nMy membership uses an Open Marketing model — people can join at any time.\n\nMy audience is struggling with [FOCUS], and my Success Path™ helps them go from [their current state — from your Module 0 Messaging Map] to [their desired outcome].\n\nPlease help me create 12 monthly promotional ideas — one per month — that add urgency and align with my content themes.\n\nFor each month please include:\n• A limited-time bonus idea or incentive\n• How it connects to that month's Success Path™ stage or content topic\n• The marketing angle or hook to use in my promo"}
+        ],
+        suggestions:["Which marketing model makes more sense for where I am right now?","How do I create urgency in an open model without feeling pushy?","How many times a year should I open a closed membership?"]
+      },
+      {
+        id:"cl3", tag:"Core Lesson 3", title:"Marketing Promotion Types You Need to Know", required:true,
+        learn:{
+          sections:[
+            {h:"5 Promotion Types", items:["🚀 Founding Member Launch — your very first promotion to get initial members and build community","📣 Detailed Launch — a bigger, more elaborate launch with bonuses and anticipation-building (2–4x per year for closed models)","♾️ Evergreen Marketing — automated funnels running 24/7 (best for 2,000+ members, requires ad investment)","⚡ Flash Promo — 48-hour email campaign to your waitlist, creates urgency with minimal effort, reusable year after year","🧪 Trial Promo — low-cost trial period (e.g. $1 for 3 days) to let people experience before committing"]}
+          ],
+          mindset:"Promotion doesn't need to be complex, just consistent. Choose one strategy, focus on it fully, and improve it over time."
+        },
+        tasks:[
+          {id:"first_promo", label:"The first promotion type I'll use and why:", type:"radio", opts:["Founding Member Launch — I'm just getting started","Detailed Launch — I already have some audience and want a bigger push","Flash Promo — I want something quick and low-effort to test","Trial Promo — I want people to experience before they commit","Still figuring this out"]},
+          {id:"promo_plan", label:"My plan for this promotion (timeline, platform, what I'll offer):", type:"textarea", ph:"When will you run it? Where will you promote it? What's the offer? What makes it time-sensitive?"}
+        ],
+        prompts:[],
+        suggestions:["Which promotion type is right for where I am in my membership journey?","How do I structure a Founding Member Launch from scratch?","What should I include in a flash promo email sequence?"]
+      },
+      {
+        id:"cl4", tag:"Core Lesson 4", title:"Craft a Winning Offer", required:true,
+        learn:{
+          sections:[
+            {h:"The 5 Core Components of an Irresistible Offer", items:["🎯 Positioning — establish yourself as the authority for solving their specific problem","🪝 Hook — highlight the before/after contrast; speak to their deepest desires and outcomes","📦 Deliverables — list what's included AND explain why each piece matters","🎁 Bonuses — address common objections or help them implement faster (fast-action bonuses work especially well)","✅ Extras — guarantee, deadline, social proof, and pricing contrast to make it a no-brainer"]},
+            {h:"Pricing Strategy", items:["Use contrast — compare your price against the value or against alternatives","Be transparent and proud of your price — don't hide it","A guarantee removes risk and makes it easier to say yes","Deadlines create urgency and push people to act now instead of 'maybe later'"]}
+          ],
+          mindset:"Your offer isn't just about what they get — it's about the transformation you're promising. Lead with outcomes and your audience will see the true value."
+        },
+        tasks:[
+          {id:"positioning", label:"My positioning statement:", type:"textarea", ph:"I help [audience] go from [current state] to [desired outcome] through [your unique approach]..."},
+          {id:"hook", label:"My hook (the before/after contrast that grabs attention):", type:"textarea", ph:"What if [desired future state]? Right now you're [current pain point] — but inside [membership name], you'll [transformation]..."},
+          {id:"deliverables", label:"My deliverables (each with a 'why it matters' sentence):", type:"textarea", ph:"1. [Deliverable name] — so that [why it matters / what problem it solves]\n2. [Deliverable name] — so that...\n3. ..."},
+          {id:"bonuses", label:"My bonuses (and the objection or pain point each addresses):", type:"textarea", ph:"Bonus 1: [Name] — helps members who [common objection or struggle]\nBonus 2: [Name] — helps members who [common objection or struggle]"},
+          {id:"extras", label:"My offer extras (guarantee, deadline, social proof, pricing):", type:"textarea", ph:"Guarantee: e.g. 14-day money-back\nDeadline: e.g. founding member price until [date]\nSocial proof: e.g. testimonials from [who]\nPricing: $[X]/month or $[Y]/year"},
+          {id:"cta", label:"My call to action:", type:"textarea", ph:"Click [button] to [action] and [start experiencing the transformation]..."}
+        ],
+        prompts:[
+          {label:"Build Out Your Full Winning Offer", hint:"This prompt generates all 7 components of your offer in one go — ready to use on your sales page and in your launch.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'm creating a compelling offer for my membership. Please help me build out each of the core components:\n\nMy membership helps them go from [current reality — from your Messaging Map] to [desired transformation].\n\n• Positioning: A statement showing what I'm known for and what transformation I deliver\n• Hook: A message capturing the before/after journey that grabs attention\n• Deliverables: A clear list of what's included with context on why each matters. My deliverables are: [LIST YOUR DELIVERABLES]\n• Bonuses: 1–2 bonuses that address common objections. My bonuses are: [LIST IF KNOWN]\n• Extras: Guarantee, deadline, social proof elements. My extras: [LIST IF KNOWN]\n• Pricing: Value-contrast explanation that makes the price feel like a no-brainer. My prices: [e.g. $X/month or $Y/year]\n• Call to Action: Simple and direct — what to do next\n\nFocus on outcome-based, transformation-first language throughout."}
+        ],
+        suggestions:["Can you review my positioning statement and make it sharper?","What bonuses would work best for my specific audience's objections?","How do I write my hook so it immediately resonates with my ideal member?"]
+      },
+      {
+        id:"ddl1", tag:"Deep Dive 1", title:"Common Pricing Models", required:false,
+        learn:{
+          sections:[
+            {h:"7 Pricing Models", items:["💳 Monthly Subscription — most common; start low and raise over time","📅 Monthly + Annual Option — incentivize annual commitment with a discount (better cash flow)","💰 Upfront Fee + Monthly — discourages cancellation/rejoining, gives cash injection upfront","⛔ One-Time Fee — NOT recommended; unsustainable and not a true membership model","📆 Fixed-Term Fee — set number of months (6, 9, or 12) with a clear end date","🧪 Trial + Monthly — $1 for 3 days then regular price; great post-promotion strategy","♾️ Evergreen — automated funnel, best for 2,000+ members, requires ads investment"]},
+            {h:"How to Set Your Starting Price", items:["Start lower than you think — every price increase is a built-in promotion","B2B or 'make/save money' memberships: $50–$100/month (front-end), $200–$1,000/month (back-end)","Hobby or pet markets: $5–$25/month (front-end), up to $100–$200/month (back-end)","Health markets: $10–$50/month typically","Your Success Path™ is critical — the more progress members make, the more you can charge"]}
+          ],
+          mindset:"Pricing doesn't have to be set in stone. Start with a model that feels right, and adjust as your membership grows and delivers more value."
+        },
+        tasks:[
+          {id:"pricing_model", label:"My pricing model:", type:"radio", opts:["Monthly subscription only","Monthly + Annual option","Upfront fee + Monthly","Fixed-term","Trial + Monthly","Not decided yet"]},
+          {id:"price_point", label:"My founding member price point (use the ChatGPT prompt below to explore options):", type:"textarea", ph:"Monthly: $___/month\nAnnual: $___/year\nFounding member special: $___ (locked in for life)"},
+          {id:"price_rationale", label:"Why this price makes sense for my audience and market:", type:"textarea", ph:"What are competitors charging? Where does my price sit relative to them? What does this price signal to potential members?"}
+        ],
+        prompts:[
+          {label:"Get Founding Member Pricing Recommendations", hint:"Use this to explore 2–3 price points for your Founding Member Launch with strategic reasoning.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'm preparing for my Founding Member Launch and need help choosing a starting price.\n\nBackground:\n• My audience is: [MARKET]\n• The transformation I help them achieve: [current state → desired outcome]\n• Key deliverables included: [LIST YOUR DELIVERABLES]\n• My Success Path™ stages: [LIST STAGE NAMES]\n• Pricing structure I want to offer: [monthly only / monthly + annual / other]\n• Competitor memberships in my market (if known): [LIST 1–3 EXAMPLES WITH PRICES]\n• Other memberships or creators my audience follows: [LIST IF KNOWN]\n\nPlease suggest 2–3 potential Founding Member price points and for each:\n• Explain why it makes sense for my audience\n• What message that price sends (accessible / premium / serious investment)\n• How I might position it in my launch messaging\n\nNote: I know I can raise the price later — start strategic but affordable."}
+        ],
+        suggestions:["What pricing model works best for a brand new membership?","How do I justify a higher price point to my audience?","Should I offer an annual option from the start or wait until I've proven the membership?"]
+      },
+      {
+        id:"ddl2", tag:"Deep Dive 2", title:"Creating Contrast with Your Pricing", required:false,
+        learn:{
+          sections:[
+            {h:"Why Contrast Is Everything in Pricing", items:["Pricing is always relative — people compare your price to something else","Your job: control the comparison so your price always looks good","The blueberry analogy: $2 off a $4 pint feels amazing. $2 off a $30,000 car feels insulting.","The lesson: the same number means something completely different depending on the context"]},
+            {h:"3 Ways to Use Contrast", items:["Position as the low-price option: compare to a higher-priced membership with similar deliverables","Position as the premium option: compare to a cheaper membership with less value","Use the decoy strategy: offer 3 tiers where the middle option looks like a great deal (The Economist example: print $125, online $59, print + online $125 — everyone chose the third)"]}
+          ],
+          mindset:"If someone says your membership is 'too expensive,' don't get discouraged — use contrast to your advantage. Frame your price against the value, and your audience will see it as an investment."
+        },
+        tasks:[
+          {id:"contrast_strategy", label:"How I'll use pricing contrast in my marketing:", type:"textarea", ph:"Will you compare to a more expensive option to show you're affordable? Or compare to a cheaper option with less value to show you're premium? Or use a decoy tier strategy?"}
+        ],
+        prompts:[],
+        suggestions:["How do I use contrast when I don't know what competitors charge?","Should I list my price early or late on my sales page?","How do I use the decoy pricing strategy for a membership?"]
+      },
+      {
+        id:"ddl3", tag:"Deep Dive 3", title:"Mapping Your Marketing Calendar", required:false,
+        learn:{
+          sections:[
+            {h:"A-Level Promotions (Big Push)", items:["High energy, high effort — require weeks of preparation","Bring in significant influx of new members","Plan for 2 per year, spaced evenly (e.g. April and September)","Allow 1–2 months before each to build anticipation","Give yourself recovery time after — focus on onboarding before the next push"]},
+            {h:"B-Level Promotions (Simpler Campaigns)", items:["Smaller, easier-to-execute — typically an email flash sale to your waitlist","3–4 per year, in the months between A-level promotions (e.g. January, July, November)","Can be reused with little modification year after year","Target people who showed interest but didn't sign up during your big promotions"]}
+          ],
+          mindset:"You don't need to promote all year long — strategic, well-timed A-level and B-level promotions create a steady rhythm that fuels growth without burnout."
+        },
+        tasks:[
+          {id:"a_level_months", label:"My A-level promotion months:", type:"textarea", ph:"e.g. April and September\nOr: January, May, and October\n\nWhat makes these months strategic for your audience?"},
+          {id:"b_level_months", label:"My B-level promotion months:", type:"textarea", ph:"e.g. January, July, November\nWhat type of promo will each be? (flash sale, affiliate push, waitlist email, etc.)"},
+          {id:"full_calendar", label:"My full 12-month marketing calendar:", type:"textarea", ph:"Jan: B-level — [type + brief description]\nFeb: content/community building\nMar: pre-launch build for April\nApr: A-level launch — [brief description]\n... (continue all 12 months)"}
+        ],
+        prompts:[
+          {label:"Review and Optimise Your Marketing Calendar", hint:"Use this to get strategic feedback on your planned promotion schedule.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI've mapped out my marketing calendar for the year:\n\nA-level promotions (big launches): [LIST YOUR MONTHS]\nB-level promotions (flash sales, waitlist pushes): [LIST YOUR MONTHS]\nContent/community months: [LIST YOUR MONTHS]\n\nCan you:\n1. Review my calendar and identify any gaps, conflicts, or timing issues\n2. Suggest any adjustments to optimise my marketing flow\n3. Recommend what I should be doing in the non-promo months to build momentum for my next launch\n4. Flag any months that might be difficult for my specific audience (holidays, seasonal patterns, etc.)"}
+        ],
+        suggestions:["When is the best time of year to run a big launch for my audience?","How do I build anticipation before an A-level promotion?","What should I be doing between promotions to keep warm leads engaged?"]
+      },
+      {
+        id:"ddl4", tag:"Deep Dive 4", title:"Sales Page Fundamentals", required:false,
+        learn:{
+          sections:[
+            {h:"7 Questions Every Sales Page Must Answer", items:["1. What is it that you're offering? — clear, upfront, no confusion","2. Why does it matter? — the before/after contrast; why should they care right now?","3. Who are you and why did you develop this? — your credibility and story","4. What is possible with your process? — show the transformation your system delivers","5. What is included? — deliverables with context on why each matters","6. What is the price? — be transparent and proud; use contrast","7. What do you want people to do next? — one clear call to action"]},
+            {h:"Sales Page Design Principles", items:["Most visitors skim — use headlines and sub-headlines as your 7 answers","A winning sales page sells transformation, not just features","Your story is your credibility — you don't need formal credentials","Social proof (testimonials, wins) does the heavy lifting for you"]}
+          ],
+          mindset:"A winning sales page doesn't just tell people what they'll get — it sells the transformation. Show them how their life will change after joining."
+        },
+        tasks:[
+          {id:"sp_offering", label:"1. What I'm offering (clear, one-sentence statement):", type:"textarea", ph:"e.g. 'A monthly membership for [audience] that helps them [specific result] without [common pain]'"},
+          {id:"sp_why", label:"2. Why it matters (the before/after contrast):", type:"textarea", ph:"Right now, your audience is [current pain]. Inside [membership], they'll [desired future state]..."},
+          {id:"sp_credibility", label:"3. Who you are and why you developed this:", type:"textarea", ph:"Your story, your experience, what makes you qualified — credentials OR lived experience both work"},
+          {id:"sp_process", label:"4. What's possible with your process (transformation proof):", type:"textarea", ph:"Describe your Success Path™ or methodology and the results it delivers..."},
+          {id:"sp_included", label:"5. What's included (deliverables with 'why it matters'):", type:"textarea", ph:"• [Deliverable] — so that [why it matters]\n• [Deliverable] — so that..."},
+          {id:"sp_price", label:"6. Your price (with contrast framing):", type:"textarea", ph:"'For less than [relatable comparison], you get [transformation]...' — then clearly state your price"},
+          {id:"sp_cta", label:"7. Your call to action:", type:"textarea", ph:"Click [button] to [action] and [start the transformation today]..."}
+        ],
+        prompts:[
+          {label:"Draft Your Full Sales Page", hint:"This generates all 7 sections of your sales page in one go — ready to edit and publish.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'm writing a sales page for my membership. Please draft compelling, clear copy that answers all 7 key questions:\n\n1. What I'm offering: [membership name + who it's for]\n2. The transformation: from [current state] to [desired outcome]\n3. My credibility: [your story / experience / why you created this]\n4. My process: [your Success Path™ or methodology]\n5. Deliverables: [LIST WITH SHORT DESCRIPTIONS]\n6. Pricing: [your price points]\n7. Call to action: [what you want them to do]\n\nPlease write a full sales page with headlines and sub-headlines for each section. Keep the tone [warm / conversational / bold — customize] and focus every section on transformation, not just features."},
+          {label:"Write Your Credibility Story (Without Formal Credentials)", hint:"Don't have a degree or certification? Use this to craft a credibility section based on lived experience.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'm writing the credibility section of my sales page but I don't have formal training or credentials.\n\nPlease help me write a credibility statement based on:\n• My personal journey related to this topic: [YOUR ANSWER]\n• Challenges I've overcome that my audience faces: [YOUR ANSWER]\n• How I've helped others (formally or informally): [YOUR ANSWER]\n• What people come to me for: [YOUR ANSWER]\n• Why I'm passionate about this: [YOUR ANSWER]\n• What makes me relatable to my audience: [YOUR ANSWER]\n\nWrite a warm, honest, and confident credibility section for my sales page that makes me sound human and trustworthy — not clinical or stiff."}
+        ],
+        suggestions:["Can you review my sales page draft and tell me what's missing?","How long should my sales page be for a lower-priced membership?","How do I write the 'why it matters' section without sounding pushy?"]
+      }
+    ]
+  },
+  {
+    id:"m4", tag:"Module 4", name:"Launch", color:"#7B6FD4", ready:true,
+    lessons:[
+      {
+        id:"cl1", tag:"Core Lesson 1", title:"Finding Your Launch Style", required:true,
+        learn:{
+          sections:[
+            {h:"The Launch Style Spectrum", items:["Simple end: flash email launch, social post + DMs, 1:1 personal invites","Middle: Founding Member Launch, Facebook Lives, coaching week","Complex end: full video series + webinar + ads + affiliates + challenge/bootcamp","There is no right or wrong — just the best match for YOU"]},
+            {h:"Why Your Style Matters", items:["When you launch in a style that feels natural you show up with more confidence","You avoid burnout and actually enjoy the process","You convert better because your energy is authentic","You can always grow into more complexity over time — Stu started with just pre-recorded videos + a webinar"]}
+          ],
+          mindset:"You don't have to launch like anyone else. You just have to start. Clarity + action beats perfection every time."
+        },
+        tasks:[
+          {id:"style_pick", label:"The launch style I'm most drawn to:", type:"radio", opts:["Simple — email sequence or flash promo","Founding Member Launch (personal outreach + social posts)","Facebook / Instagram Lives","Pre-recorded video series","Live webinar or masterclass","Challenge or bootcamp","Full whiz-bang (video series + webinar + affiliates + ads)"]},
+          {id:"style_why", label:"Why this style feels like the right fit for me right now:", type:"textarea", ph:"Think about your strengths, your bandwidth, your audience's preferences, and your comfort level..."},
+          {id:"style_next", label:"The next launch style I want to work toward (as I grow):", type:"textarea", ph:"What would you add to your launch as you get more comfortable? What excites you to eventually try?"}
+        ],
+        prompts:[],
+        suggestions:["Which launch style makes the most sense for my audience and personality?","How did other membership owners start simple and grow into more complex launches?","What's the minimum viable launch I could do right now?"]
+      },
+      {
+        id:"cl2", tag:"Core Lesson 2", title:"Launch Content Fundamentals", required:true,
+        learn:{
+          sections:[
+            {h:"The 3 Launch Content Fundamentals", items:["1. Present the Opportunity — paint the vision of transformation before you talk about your offer. Show it's possible AND possible for them. Use real-world proof (trends, case studies, news).","2. Guide Them Through the First Step — help them experience a small win BEFORE they buy. Progress builds belief. Create results in advance of the sale.","3. Share the Blueprint — reveal your Success Path™. Show where they are, where they're going, and how your membership is the bridge."]},
+            {h:"Why This Works (The Psychology)", items:["Hope: 'Could this really work for me?'","Progress: 'Okay, I'm doing it and I see it working'","Clarity: 'Now I see the full picture — I'm in'"]}
+          ],
+          mindset:"Confidence creates conversions. Don't just explain — guide, inspire, and empower. Show people transformation is possible, then walk them into it."
+        },
+        tasks:[
+          {id:"opportunity", label:"The transformation / opportunity I'll present at the start of my launch:", type:"textarea", ph:"What's the bigger picture you're inviting your audience into? What proof or trends back it up?"},
+          {id:"first_step", label:"The 'first step' win I'll help my audience experience during my free training:", type:"textarea", ph:"What small, meaningful action can they take that creates a result BEFORE they buy? (e.g. complete a worksheet, make a decision, post something, create a mini version of something)"},
+          {id:"blueprint", label:"How I'll present my Success Path™ as the launch blueprint:", type:"textarea", ph:"How will you walk them through the full journey? How does each stage connect to where they are right now?"}
+        ],
+        prompts:[
+          {label:"Brainstorm Your 'First Step' Win", hint:"Use this to design the small, meaningful result your audience will experience during your free training.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'm designing a free training experience and I want to help my audience get a small but meaningful win before they buy.\n\nMy audience: [MARKET]\nThe transformation I help them achieve: [from your Messaging Map — before → after]\nMy membership deliverables include: [LIST YOUR KEY DELIVERABLES]\nMy Success Path™ stages: [LIST YOUR STAGE NAMES]\n\nPlease suggest 2–3 ideas for a 'first step' my audience can complete during my free training. Each idea should:\n• Be quick and easy to complete\n• Create a real (even if small) result\n• Build belief in the bigger transformation\n• Feel encouraging, not overwhelming"},
+          {label:"Turn Your Success Path™ Into a Launch Blueprint", hint:"Use this to transform your Success Path™ into a compelling journey you can share during your launch.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nMy Success Path™ has [NUMBER] stages. Please help me turn it into a launch-ready blueprint I can share during my free training.\n\nHere are my stages:\n[PASTE YOUR STAGE NAMES AND DESCRIPTIONS FROM MODULE 2]\n\nFor each stage, please include:\n• A simplified, audience-friendly explanation of the stage\n• The core milestone or focus\n• How my membership specifically supports members at this stage\n\nTone: clear, encouraging, and focused on progress. This should help my audience see the full journey and feel excited about having support."}
+        ],
+        suggestions:["What kind of first step win would work best for my specific audience?","How do I make my Success Path™ feel exciting and not overwhelming when I share it?","How do I present the 'opportunity' without it feeling salesy?"]
+      },
+      {
+        id:"cl3", tag:"Core Lesson 3", title:"5 Phases of a Successful Launch", required:true,
+        learn:{
+          sections:[
+            {h:"The 5 Launch Phases", items:["1. 🤝 Connection (2–3 months out) — build emotional trust. Share your values, what you stand for, your story. No selling.","2. 📣 Awareness (1–2 months out) — build belief in the possibility. Share member wins, before/afters, success stories. Gush over your people.","3. 🔥 Desire (7–10 days out) — deliver your 3-part training: Opportunity → First Step → Blueprint. This is where people lean in and say 'I want this.'","4. 💳 Purchase (4–7 days) — cart is open. Sales page live. Remind, reinforce, answer objections, go live, use testimonials.","5. 🎉 Wow (immediately after joining) — deliver an incredible onboarding experience. The Wow phase is your pre-launch for the next launch."]},
+            {h:"Two Timeline Options", items:["Regular launch: 2–3 months connection → 1–2 months awareness → 7–10 days desire → 4–7 days purchase → wow ongoing","Compressed launch: 1–2 weeks connection + awareness combined → 5–7 days desire → 3–5 days purchase → wow ongoing"]}
+          ],
+          mindset:"A successful launch isn't just about what happens during your cart open — it's about what happens before and after, too. The longer the runway, the bigger the results."
+        },
+        tasks:[
+          {id:"timeline", label:"My launch timeline:", type:"radio", opts:["Regular — full runway (2–3 months)","Compressed — quick launch (3–4 weeks total)","Not sure yet"]},
+          {id:"phase_dates", label:"My target dates for each launch phase:", type:"textarea", ph:"Connection phase starts: \nAwareness phase starts: \nDesire phase starts: \nCart open: \nCart close: \nWow / onboarding begins: "}
+        ],
+        prompts:[],
+        suggestions:["How do I build connection with a small audience before a launch?","What should I post during the awareness phase?","How do I create urgency during the purchase phase without feeling pushy?"]
+      },
+      {
+        id:"cl4", tag:"Core Lesson 4", title:"Launch Components", required:true,
+        learn:{
+          sections:[
+            {h:"What to DO in each phase", items:["🤝 Connection: share values, 'why I do this' stories, what you're against, behind-the-scenes. No CTA needed — just connect.","📣 Awareness: success stories, before/afters, objection-crushing panels. Not about you — about people like your audience.","🔥 Desire: deliver 3-part training (pre-recorded, live, email, audio — your choice), optional webinar/Q&A to close","💳 Purchase: sales page + payment portal live, enrollment emails, go live to answer Q's, testimonials, direct invites, affiliates if relevant","🎉 Wow: opening celebration, new member onboarding call, community connection events, first quick win experience"]}
+          ],
+          mindset:"When you show up with purpose and clarity across all five phases, you build trust, belief, desire, and long-term commitment."
+        },
+        tasks:[
+          {id:"full_plan", label:"My full launch plan (use the ChatGPT prompt below, then make it yours):", type:"textarea", ph:"Connection phase — what I'll share and where:\n\nAwareness phase — stories and content I'll create:\n\nDesire phase — how I'll deliver my 3-part training:\n\nPurchase phase — what will be live and what I'll do each day:\n\nWow phase — how I'll welcome and onboard new members:"},
+          {id:"launch_style_confirm", label:"My final launch style decision:", type:"textarea", ph:"Based on everything you've learned — what does your launch actually look like? Be specific about format, platform, timeline, and your personal role."}
+        ],
+        prompts:[
+          {label:"Build Your Full 5-Phase Launch Plan", hint:"This generates a detailed, audience-specific plan for all 5 launch phases in one go.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'm preparing to launch my membership and want to create a strategic plan using all 5 launch phases.\n\nMy audience: [MARKET]\nThe transformation I help them achieve: [before → after from your Messaging Map]\nMy Success Path™: [LIST YOUR STAGE NAMES]\nMy first step experience idea: [from the previous lesson]\nMy membership deliverables: [LIST YOUR KEY DELIVERABLES]\nMy launch timeline: [regular / compressed]\nMy preferred launch style: [from Core Lesson 1]\n\nPlease outline what I should do in each of the 5 phases:\n• Connection\n• Awareness\n• Desire\n• Purchase\n• Wow\n\nFor each phase include:\n• The core goal\n• Specific content or action ideas tailored to my audience\n• Tone and energy to aim for\n\nKeep it practical and flexible — this is a planning draft."}
+        ],
+        suggestions:["What should I do during the connection phase if I have a small audience?","How many emails should I send during the purchase phase?","What does a great Wow phase look like for a brand new membership?"]
+      },
+      {
+        id:"ddl1", tag:"Deep Dive 1", title:"Debriefing Your Launch for Maximum Momentum", required:false,
+        learn:{
+          sections:[
+            {h:"Why Debriefing Matters", items:["Every launch gives you two things: results AND insights","Skipping the debrief is one of the most common mistakes membership owners make","'I never lose — I either win or I learn.' — Nelson Mandela","Tweak 10%, keep 90% — you don't need to start over each time"]},
+            {h:"6 Conversion Points to Review", items:["1. Traffic to your sign-up page — did people see the offer?","2. Sign-up/opt-in rate — was your sign-up page compelling?","3. Show-up rate — did your reminder strategy work?","4. Watch time / drop-off — was your training engaging?","5. Conversion rate at offer — was your offer clear and compelling?","6. Follow-up conversion rate — did your post-launch emails drive action?"]},
+            {h:"Post-Launch Checklist", items:["Pause or stop all ads","Update banners and redirect sales pages to waitlist","Onboard new members immediately","Nurture those who didn't buy with email + ongoing content","Run your debrief with your team","Capture screenshots and testimonials for next time"]}
+          ],
+          mindset:"Your first launch is never your final launch. Every time you launch, you get better, faster, and more confident. The debrief is how you go from good to great."
+        },
+        tasks:[
+          {id:"debrief_numbers", label:"My launch conversion numbers (fill in after your launch):", type:"textarea", ph:"Page views → sign-ups: \nSign-ups → show-ups: \nShow-ups → stayed through: \nStayed → heard the offer: \nOffer seen → purchased: \nFollow-up emails → purchased: "},
+          {id:"what_worked", label:"What worked well in this launch:", type:"textarea", ph:"What content got the best response? What felt easy and natural? What would you absolutely do again?"},
+          {id:"what_didnt", label:"What didn't work or felt off:", type:"textarea", ph:"Where did you lose people? What felt draining? What tech or timing issues came up?"},
+          {id:"next_tweaks", label:"The 1–2 things I'll tweak for next time:", type:"textarea", ph:"Remember: tweak 10%, keep 90%. What's the smallest change that could make the biggest difference?"},
+          {id:"emotional_debrief", label:"How the launch felt (emotional debrief):", type:"textarea", ph:"What excited you? What drained you? What surprised you? What felt aligned — and what didn't?"}
+        ],
+        prompts:[
+          {label:"Analyse My Launch Conversion Points", hint:"Come back to this after your launch — paste in your numbers and get strategic feedback.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI recently ran a [DESCRIBE YOUR LAUNCH STYLE] to promote my membership.\n\nHere are the numbers I tracked:\n• Page views to sign-up: [INSERT]\n• Sign-up to show-up rate: [INSERT]\n• Show-up to stayed through: [INSERT]\n• Stayed through to offer seen: [INSERT]\n• Offer seen to purchase: [INSERT]\n• Follow-up emails to purchase: [INSERT]\n\nPlease help me analyse what these numbers tell me:\n• What's working well\n• Where the biggest drop-off is\n• Where to focus my improvements for next time\n\nKeep the feedback encouraging and practical — I want to improve without overhauling everything."},
+          {label:"Walk Me Through an Emotional Launch Debrief", hint:"Use this to process the experience and feel confident heading into your next launch.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI just finished a launch and I want to reflect on how it felt, not just the numbers.\n\nPlease walk me through an emotional debrief by asking me about:\n• What felt good and aligned\n• What felt draining or off\n• What surprised me\n• What I'd do again (and what I'd never do again)\n• What my audience seemed to respond to most\n\nAsk me one question at a time and help me process both the wins and the lessons so I feel confident going into my next launch."}
+        ],
+        suggestions:["My sign-up rate was great but show-up rate was low — what should I fix?","How do I know if my offer conversion rate is good or needs work?","My launch felt exhausting — how do I make the next one more sustainable?"]
+      },
+      {
+        id:"ddl2", tag:"Deep Dive 2", title:"Biggie Size Your Promotion with Affiliates", required:false,
+        learn:{
+          sections:[
+            {h:"What Are Affiliate / JV Partners?", items:["Someone who promotes your membership to their audience and earns a commission when someone joins through their link","Standard commission: 20–30% of monthly recurring revenue (monthly pay = more motivated partners)","Two types: A-affiliates (large audience, big bursts) and B-affiliates (students, colleagues, smaller reach but powerful combined)","7–8 of Stu's top 10 affiliates are students from his own program — your happy members may be your best partners"]},
+            {h:"3 Keys to an Effective Affiliate Program", items:["1. Do the thinking for them — suggest who in their audience this is for, provide examples, map out a promo schedule","2. Provide tools and swipe copy — email templates, social graphics, captions, links, images. Make it plug-and-play.","3. Communicate often — send reminders, share dates, offer encouragement, update on progress. When you lead well, they show up."]}
+          ],
+          mindset:"Affiliate partners allow you to scale your impact without adding more to your plate. Start small, lead with vision, communicate with heart — and watch your launch reach farther than you imagined."
+        },
+        tasks:[
+          {id:"affiliate_list", label:"3–5 people I could approach as affiliate or JV partners:", type:"textarea", ph:"Name / relationship / why they'd be a good fit:\n1. \n2. \n3. \n(Think: members who've gotten results, colleagues in adjacent niches, friends with aligned audiences)"},
+          {id:"commission_plan", label:"My affiliate commission plan:", type:"textarea", ph:"Commission rate: e.g. 30% monthly recurring\nHow I'll track: e.g. affiliate platform like ThriveCart, ClickFunnels, etc.\nWhen I'll pay: e.g. 30 days after each payment clears"},
+          {id:"swipe_copy", label:"Swipe copy and tools I'll create for my affiliates:", type:"textarea", ph:"e.g. 2 email templates, 3 social captions, 1 graphic set, a simple promo schedule"}
+        ],
+        prompts:[
+          {label:"Write Affiliate Swipe Copy for My Launch", hint:"Use this to create ready-to-use email and social templates you can give to your partners.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'm preparing affiliate swipe copy for my upcoming membership launch.\n\nMy membership is called [YOUR MEMBERSHIP NAME] and helps [MARKET] go from [current state] to [desired transformation].\n\nPlease create:\n1. Two email templates affiliates can customize — one for the awareness/desire phase and one for the cart-open phase\n2. Three social media captions (one for each of: connection, desire, and cart open)\n3. A simple suggested promo schedule (what to send and when, in the 2 weeks before and during cart open)\n\nKeep the copy warm, specific to my audience, and easy for affiliates to make their own."}
+        ],
+        suggestions:["How do I approach someone about becoming an affiliate without it feeling awkward?","What platform should I use to manage affiliate tracking and payments?","How do I make my affiliate program attractive enough that people actually promote?"]
+      }
+    ]
+  },
+  {
+    id:"m5", tag:"Module 5", name:"Community", color:"#5ABF59", ready:true,
+    lessons:[
+      {
+        id:"cl1", tag:"Core Lesson 1", title:"5 Essentials of a Thriving Community", required:true,
+        learn:{
+          sections:[
+            {h:"The 5 Essentials", items:["1. 🎯 Clear Purpose — rooted in your Success Path™. Communicate it often so members stay focused on the transformation they're working toward.","2. 🌱 Defined Culture — set the tone intentionally. Your culture is catchy — model what you want to see and it spreads.","3. 👑 Clear Leadership — step up when needed. Guide the community, resolve conflict, and protect the health of the space.","4. 📋 Clear Rules & Guidelines — set boundaries so everyone knows what's expected. Rules protect your values, not restrict your members.","5. 📣 Clear Communication — don't be afraid to communicate frequently. Consistent communication builds trust and keeps members engaged."]},
+            {h:"A note on culture", items:["If members shift the culture in a direction you don't want — step in and reset it","'Your community will reflect the energy you put into it'","Model the culture you want to see and your members will follow"]}
+          ],
+          mindset:"Engagement isn't about doing everything — it's about showing up consistently and intentionally. Small actions, like a warm welcome or a simple challenge, can spark a big connection."
+        },
+        tasks:[
+          {id:"purpose", label:"My community's purpose statement:", type:"textarea", ph:"Use the ChatGPT prompt below to draft it, then rewrite it in your voice. It should explain how the community supports the transformation and what members will feel when they reach their goals."},
+          {id:"culture", label:"My community culture statement + 3–5 community guidelines:", type:"textarea", ph:"Culture statement: [What's the vibe? What do you stand for as a community?]\n\nGuidelines:\n1. \n2. \n3. \n4. \n5. "},
+          {id:"leadership", label:"My leadership style and how I'll show up as community leader:", type:"textarea", ph:"How will you show up consistently? How will you handle hard moments? What does care look like in practice?"},
+          {id:"communication", label:"My community communication rhythm:", type:"textarea", ph:"How often will you post in the community? Email members? What types of content will you rotate through? (e.g. weekly check-in post, monthly wins celebration, mid-month pulse check)"}
+        ],
+        prompts:[
+          {label:"Write My Community Purpose Statement", hint:"Use this to craft a clear, motivating purpose statement for your community.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'm building a community for my membership. Please help me write a clear, warm, and motivating purpose statement.\n\nMy audience: [MARKET]\nThe transformation I help them achieve: [before → after from your Messaging Map]\nMy Success Path™: [LIST YOUR STAGE NAMES]\n\nThe purpose statement should explain:\n• How the community supports the transformation\n• What members will feel when they reach their goals\n• The spirit or energy of the space\n\nKeep it to 3–5 sentences. Warm and empowering tone."},
+          {label:"Define My Community Culture + Guidelines", hint:"Use this to create your culture statement and community guidelines.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'm defining the culture for my membership community.\n\nMy audience: [MARKET]\nI want the culture to feel: [e.g. warm, encouraging, non-judgmental, growth-oriented, fun — describe the vibe]\n\nPlease help me write:\n1. A short culture statement (2–4 sentences) that captures the spirit of the community\n2. 4–6 community guidelines that support this vibe and create a safe, positive space\n\nMake the guidelines feel human and encouraging — not corporate or restrictive."},
+          {label:"Plan My Community Communication Rhythm", hint:"Use this to build a simple, sustainable communication plan for staying connected with your members.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI want to keep my membership community engaged with regular, meaningful communication.\n\nMy audience: [MARKET]\nMy membership content includes: [LIST YOUR MONTHLY DELIVERABLES FROM MODULE 2]\n\nPlease help me plan:\n1. A weekly/monthly communication rhythm (how often to post, email, and check in)\n2. 4–6 content types I can rotate through to keep things fresh (e.g. wins, conversation starters, inspiration, sneak peeks, challenges)\n3. One example post for each content type, tailored to my audience"}
+        ],
+        suggestions:["How do I handle it when my community's culture starts to feel negative or off-track?","What's the right posting frequency so I'm consistent but not overwhelming members?","How do I show up as a leader without feeling like I need to be available 24/7?"]
+      },
+      {
+        id:"cl2", tag:"Core Lesson 2", title:"Selecting Your Community Platform", required:true,
+        learn:{
+          sections:[
+            {h:"3 Factors to Consider", items:["1. ⚡ Simplicity — easy setup for you, easy to jump in for members. Tagging and notifications are a must.","2. 💰 Cost Effectiveness — ideally content AND community under one roof. Fewer tools = fewer headaches.","3. 🎯 Right Fit for You and Your Members — automation, analytics, and customization matter for long-term management."]},
+            {h:"Facebook vs. Membership.io", items:["Facebook: fast to set up, familiar to most — but full of distractions (ads, politics, algorithm changes). Limited control over member experience.","Membership.io: built for paid memberships, centralised content + community, full control over the experience, tagging + notifications built in","Recommendation: Whatever gets you launched is the right choice. You can always migrate later."]}
+          ],
+          mindset:"It's easy to get caught up in the idea of using a platform just because it's free or familiar. Choose what allows you to manage your community effectively and create a great experience for your members."
+        },
+        tasks:[
+          {id:"features", label:"3 must-have features for my community platform:", type:"textarea", ph:"e.g. Tagging and notifications, ability to host content + community in one place, mobile app for members, analytics, customizable branding..."},
+          {id:"platform_choice", label:"My community platform choice and why:", type:"textarea", ph:"Which platform will you use? Why is it the right fit for your audience and how you manage your business?"}
+        ],
+        prompts:[
+          {label:"Compare Community Platforms for My Membership", hint:"Use this to get a tailored platform comparison based on your specific needs.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'm choosing a platform for my membership community. Please help me compare my options.\n\nMy audience: [MARKET]\nKey features I need: [PASTE YOUR 3 MUST-HAVE FEATURES]\nBudget considerations: [e.g. starting lean, willing to invest for the right platform, etc.]\n\nPlease provide 3–4 platform options with:\n• A brief description of what each is best for\n• Pros for my specific use case\n• Cons or limitations to be aware of\n• Rough cost/pricing\n\nNote: I've heard Membership.io is built specifically for paid memberships — please include it in the comparison."}
+        ],
+        suggestions:["Is it worth migrating from Facebook to a paid platform once I grow?","What platform works best for a community-first membership vs. a content-first membership?","How do I get members to actually use the community platform after they join?"]
+      },
+      {
+        id:"cl3", tag:"Core Lesson 3", title:"Connection Strategies That Increase Engagement", required:true,
+        learn:{
+          sections:[
+            {h:"9 Strategies to Spark Engagement", items:["1. 🎉 Thank You Page — first impression after joining. Make it fun, memorable, and excitement-building.","2. 🧭 Onboarding — clarity, Success Path™, connection, and a quick win in the first 30 days. This triples lifetime value.","3. 🥂 Welcome Celebration — celebrate their decision, guide their next steps, make it action-packed and fun.","4. 📅 Important Dates — use AddEvent so members can add all events to their calendar in one click.","5. 🏆 Challenges — design one aligned with their desired outcome; celebrate small wins along the way.","6. 👋 Community Introductions — create a template with guided questions to help members introduce themselves and connect.","7. 📧 Email Setup — tell members which emails to expect and whitelist. Clear communication = no missed moments.","8. 🔔 Notifications — push notifications for tags, new content, and events bring members back and boost retention.","9. 🎮 Gamification — badges, rankings, rewards for completing milestones make progress fun and motivating."]},
+            {h:"When Engagement Drops Off", items:["New communities: normal to have a 'let's see what happens' phase — push through with intentional action","Existing communities: re-engage with challenges, behind-the-scenes content, live meetups, fun posts (2 truths and a lie, flag emojis, pet photos)","Reignite culture: post community terms, share values, go live and show your personality"]}
+          ],
+          mindset:"Engagement isn't about doing everything — it's about showing up consistently and intentionally. Small actions, like a warm welcome or a simple challenge, can spark a big connection."
+        },
+        tasks:[
+          {id:"thank_you", label:"My thank you page plan (what will new members see immediately after joining):", type:"textarea", ph:"What message will you share? How will you eliminate buyer's remorse and build excitement? Any surprise or delight element?"},
+          {id:"welcome_cel", label:"My welcome celebration plan:", type:"textarea", ph:"Will it be a live call? A post? A video? What will you celebrate, share, and guide them to do first?"},
+          {id:"intro_template", label:"My community introduction template (the questions I'll ask new members to answer):", type:"textarea", ph:"e.g. Where are you joining from? How long have you been [in your niche]? What's the #1 thing you're hoping to achieve? Fun bonus question: ..."},
+          {id:"engagement_tactic", label:"The first engagement strategy I'll implement and when:", type:"textarea", ph:"Pick ONE from the list above. What is it, when will you launch it, and what does success look like?"}
+        ],
+        prompts:[
+          {label:"Design My First Community Challenge", hint:"Use this to create a quick-win challenge that builds momentum in your community.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI want to design a community challenge that creates engagement, builds momentum, and helps members experience a quick win.\n\nMy audience: [MARKET]\nThe transformation I help them achieve: [before → after]\nMy Success Path™ stages: [LIST YOUR STAGE NAMES]\n\nPlease create a 5–7 day community challenge with:\n• A catchy name that fits my brand\n• A daily focus or theme (one per day)\n• A simple action for members to take each day\n• A community post prompt for each day (something they can share to build connection)\n• A suggested hashtag\n\nKeep it encouraging, simple, and momentum-building — not overwhelming."},
+          {label:"Write My Community Introduction Template", hint:"Use this to create a guided introduction post that makes new members feel welcome and helps them connect.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI want to create a community introduction template for new members joining my membership.\n\nMy audience: [MARKET]\nMy community vibe: [describe your culture from CL1]\n\nPlease write a community introduction post template that:\n• Welcomes new members warmly\n• Includes 4–5 guided questions they can answer to introduce themselves\n• Includes at least one fun, personality-revealing question\n• Encourages others to respond and connect\n• Feels warm and human — not like a corporate form\n\nAlso write a short post I can pin or share that invites new members to use this template."}
+        ],
+        suggestions:["What's the best first challenge to run for a brand new community?","How do I get shy members to actually post and engage?","My community feels quiet — what's the fastest way to reignite engagement?"]
+      },
+      {
+        id:"cl4", tag:"Core Lesson 4", title:"Managing Community Growth", required:false,
+        learn:{
+          sections:[
+            {h:"3 Phases of Community Management", items:["Phase 1: You as the Community Manager — set expectations about your availability, tag members to answer each other's questions, don't respond to everything or members won't engage themselves","Phase 2: Volunteers — recruit your most engaged members as moderators, give them clear guidelines and pre-filled responses, recognise and celebrate them publicly","Phase 3: Hiring a Community Manager — start part-time (5–10 hours/week), hold regular check-ins, have them track wins and report on trends"]},
+            {h:"Key Principles", items:["'Don't go into it, grow into it' — hire only when it genuinely makes sense","Empower members to help each other — this creates a stronger, more connected community","Your community manager should be bringing you insights, wins, and flags — not just moderating"]}
+          ],
+          mindset:"'Don't go into it, grow into it.' Scale your community management gradually, and you'll build something that grows with you — not something that burns you out."
+        },
+        tasks:[
+          {id:"current_phase", label:"Which phase of community management am I in right now?", type:"radio", opts:["Phase 1 — I'm managing everything myself","Phase 2 — I'm ready to recruit volunteer moderators","Phase 3 — I'm hiring or have hired a community manager"]},
+          {id:"mgmt_plan", label:"My community management plan for this phase:", type:"textarea", ph:"Phase 1: How will you set boundaries with your time? How will you encourage peer-to-peer answering?\nPhase 2: Who would you recruit? What guidelines would you give them?\nPhase 3: What does your community manager's role look like? How will you stay aligned?"},
+          {id:"vol_guidelines", label:"If Phase 2 — my volunteer moderator guidelines:", type:"textarea", ph:"What are they responsible for? What tone should they use? What questions can they answer vs. escalate? How will you recognise them?"}
+        ],
+        prompts:[
+          {label:"Create My Volunteer Moderator Guidelines", hint:"Use this to build a simple guide for your community volunteers so they show up with confidence.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'm recruiting volunteer moderators for my membership community and need to create guidelines for them.\n\nMy community: [describe your community culture and vibe from CL1]\nMy Success Path™: [LIST YOUR STAGE NAMES]\n\nPlease create a volunteer moderator guide that includes:\n• Their role and purpose (why this matters)\n• What they're responsible for day-to-day\n• Tone and communication style guidelines\n• 3–5 common scenarios with suggested responses\n• What to escalate to me directly\n• How I'll recognise and celebrate their contributions\n\nKeep it clear, warm, and empowering — I want them to feel valued, not overwhelmed."}
+        ],
+        suggestions:["How do I identify which members would make good volunteer moderators?","What do I include in a community manager job description?","How do I set healthy boundaries around my community without going cold on my members?"]
+      },
+      {
+        id:"ddl1", tag:"Deep Dive 1", title:"Capturing and Amplifying Stories", required:false,
+        learn:{
+          sections:[
+            {h:"Why Stories Are Your Most Powerful Tool", items:["Celebrating wins — big AND small — creates a culture of positivity and momentum","Members who share their progress inspire others to take action (it's not bragging, it's motivating)","Your story database protects your motivation — when you're doubting yourself, reading through wins reminds you why you started","'Small wins make a big difference. The more members see results, the longer they'll stick around.'"]},
+            {h:"How to Organise Your Story Database", items:["Start simple: a Google Doc or spreadsheet organized by Success Path™ stage","Upgrade later: Airtable for tagging by stage AND objection (powerful for marketing)","Organize by: stage in the Success Path™ / objection the story addresses / type of win (mindset, result, milestone)","Set a monthly rhythm of sharing — a highlight post, a live celebration, or a broadcast"]}
+          ],
+          mindset:"Small wins make a big difference. Celebrating progress creates a positive, growth-focused culture that keeps members engaged and invested. Keep celebrating, keep sharing, and trust the impact you're making."
+        },
+        tasks:[
+          {id:"story_system", label:"My system for collecting and organising member stories:", type:"textarea", ph:"Will you use a Google Doc, spreadsheet, or Airtable? How will you organise them? (by stage? by objection?) Who on your team is responsible for capturing them?"},
+          {id:"story_prompt", label:"The prompts I'll use to encourage members to share their wins:", type:"textarea", ph:"e.g. Monthly 'share a win' post, a community template ('I used to [before] and now I [after]'), a DM follow-up after someone mentions a breakthrough..."},
+          {id:"story_share", label:"How I'll celebrate and amplify stories publicly:", type:"textarea", ph:"Monthly highlight post? Live broadcast? Email to all members? Social media spotlight? What's your rhythm for sharing wins?"}
+        ],
+        prompts:[
+          {label:"Turn a Member Win Into a Marketing Story", hint:"Use this to transform a real member result into a compelling story for your community or marketing.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI want to turn a member win into a short, compelling story I can share in my community or use in marketing.\n\nHere's what I know about this win:\n• Their challenge before: [DESCRIBE THEIR BEFORE STATE]\n• The result they achieved: [DESCRIBE THE WIN — even if it's small]\n• What changed for them: [DESCRIBE HOW THEY FEEL OR WHAT THEY CAN DO NOW]\n• What helped them get there: [STRATEGY, DELIVERABLE, OR COMMUNITY MOMENT]\n\nPlease write:\n1. A short community celebration post (2–3 sentences, warm and specific)\n2. A longer marketing story version (under 150 words, warm and encouraging, not hype-y)\n3. A social media caption version\n\nAll three should highlight the transformation and make other potential members think 'that could be me.'"},
+          {label:"Build My Story Collection System", hint:"Use this to set up a simple, repeatable system for capturing member wins.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI want to create a simple, repeatable system for collecting Circle of Awesomeness™ stories from my members.\n\nMy Success Path™ stages: [LIST YOUR STAGE NAMES]\nMy key audience objections (from your Messaging Map): [LIST 3–5 COMMON OBJECTIONS]\n\nPlease create:\n1. A story collection template (fields to capture for each win: stage, the before, the win, the after, what helped)\n2. 3 community post prompts I can rotate monthly to encourage members to share wins\n3. A simple tagging/organisation system so I can quickly find the right story when I need it for marketing\n\nKeep it simple enough that I or a team member can maintain it consistently."}
+        ],
+        suggestions:["How do I encourage shy members to share their wins without feeling forced?","What counts as a win worth celebrating — does it have to be a big result?","How do I use member stories ethically and with their permission?"]
+      }
+    ]
+  },
+  {id:"m6",tag:"Module 6",name:"Retention",color:"#4BBFD4",ready:false}
+];
+
+// ── State ──────────────────────────────────────────────────────
+let ctx      = JSON.parse(localStorage.getItem(SK_CTX)  || "null");
+let answers  = JSON.parse(localStorage.getItem(SK_ANS)  || "{}");
+let done     = JSON.parse(localStorage.getItem(SK_DONE) || "{}");
+let expanded = JSON.parse(localStorage.getItem(SK_MOD)  || '{"m0":true}');
+let curMod   = "m0";
+let curLes   = "cl1";
+let curTab   = "learn";
+let copied   = {};
+let panelOpen    = false;
+let chatHistory  = [];
+let chatTyping   = false;
+let curView      = "home";
+
+function saveCtx()  { localStorage.setItem(SK_CTX,  JSON.stringify(ctx));     }
+function saveAns()  { localStorage.setItem(SK_ANS,  JSON.stringify(answers)); }
+function saveDone() { localStorage.setItem(SK_DONE, JSON.stringify(done));    }
+function saveExp()  { localStorage.setItem(SK_MOD,  JSON.stringify(expanded));}
+function esc(s)     { return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function fillPrompt(t){ return t.replace(/\[MARKET\]/g,ctx.market||"[your audience]").replace(/\[FOCUS\]/g,ctx.focus||"[your focus]").replace(/\[IDENTITY\]/g,ctx.identity||"[your identity]"); }
+
+// ── Unlock logic ───────────────────────────────────────────────
+function isModuleUnlocked(modId) {
+  if (modId === "m0") return true;
+  const mods = MODULES.filter(m => m.ready);
+  const idx  = mods.findIndex(m => m.id === modId);
+  if (idx <= 0) return true;
+  const prev = mods[idx - 1];
+  // All required lessons in previous module must be done
+  return (prev.lessons || []).filter(l => l.required).every(l => done[`${prev.id}_${l.id}`]);
+}
+
+function isLessonUnlocked(modId, lesId) {
+  if (!isModuleUnlocked(modId)) return false;
+  const mod = MODULES.find(m => m.id === modId);
+  if (!mod) return false;
+  const lessons = mod.lessons || [];
+  const idx = lessons.findIndex(l => l.id === lesId);
+  if (idx === 0) return true;
+  // Previous lesson must be marked done
+  return !!done[`${modId}_${lessons[idx - 1].id}`];
+}
+
+function allCoresDone(modId) {
+  const mod = MODULES.find(m => m.id === modId);
+  if (!mod) return false;
+  return (mod.lessons || []).filter(l => l.required).every(l => done[`${modId}_${l.id}`]);
+}
+
+// ── Progress ───────────────────────────────────────────────────
+function totalLessons() { return MODULES.filter(m=>m.ready).reduce((a,m)=>a+(m.lessons||[]).length,0); }
+function totalDone()    { return Object.values(done).filter(Boolean).length; }
+
+// ── Claude panel ───────────────────────────────────────────────
+function togglePanel() {
+  panelOpen = !panelOpen;
+  document.getElementById("claude-panel").classList.toggle("open", panelOpen);
+  document.getElementById("content").style.marginRight = panelOpen ? "360px" : "0";
+  const tb = document.getElementById("claude-toggle-btn");
+  if (tb) tb.classList.toggle("active", panelOpen);
+  if (panelOpen) updatePanelContext();
+}
+
+function updatePanelContext() {
+  const mod = MODULES.find(m=>m.id===curMod);
+  const les = (mod?.lessons||[]).find(l=>l.id===curLes);
+  const el  = document.getElementById("cp-context-lesson");
+  if (el) el.textContent = les ? `${mod.tag}: ${les.title}` : "—";
+  renderChatMessages();
+}
+
+function renderChatMessages() {
+  const container = document.getElementById("cp-messages");
+  if (!container) return;
+  container.innerHTML = "";
+  const mod = MODULES.find(m=>m.id===curMod);
+  const les = (mod?.lessons||[]).find(l=>l.id===curLes);
+
+  const welcome = document.createElement("div"); welcome.className = "cp-welcome";
+  welcome.innerHTML = `<div class="cp-welcome-title">👋 Hi ${esc(ctx?.name||"there")}!</div>
+    <div class="cp-welcome-text">I've read your answers so far and I'm here to help you think through ${les?`<strong>${les.title}</strong>`:"this module"}. Ask me anything.</div>`;
+  if (chatHistory.length === 0 && les?.suggestions?.length) {
+    const sugg = document.createElement("div"); sugg.className = "cp-suggestions";
+    les.suggestions.forEach(s => {
+      const btn = document.createElement("button"); btn.className = "cp-suggestion"; btn.textContent = s;
+      btn.addEventListener("click", () => sendMessageText(s));
+      sugg.appendChild(btn);
+    });
+    welcome.appendChild(sugg);
+  }
+  container.appendChild(welcome);
+
+  chatHistory.forEach(msg => {
+    const wrap   = document.createElement("div"); wrap.className = `msg msg-${msg.role==="user"?"user":"claude"}`;
+    const lbl    = document.createElement("div"); lbl.className = "msg-label"; lbl.textContent = msg.role==="user" ? (ctx?.name||"You") : "Claude";
+    const bubble = document.createElement("div"); bubble.className = "msg-bubble"; bubble.textContent = msg.content;
+    wrap.appendChild(lbl); wrap.appendChild(bubble); container.appendChild(wrap);
+  });
+
+  if (chatTyping) {
+    const wrap   = document.createElement("div"); wrap.className = "msg msg-claude";
+    const lbl    = document.createElement("div"); lbl.className = "msg-label"; lbl.textContent = "Claude";
+    const typing = document.createElement("div"); typing.className = "cp-typing";
+    typing.innerHTML = "<span></span><span></span><span></span>";
+    wrap.appendChild(lbl); wrap.appendChild(typing); container.appendChild(wrap);
+  }
+  container.scrollTop = container.scrollHeight;
+}
+
+function buildSystemPrompt() {
+  const mod = MODULES.find(m=>m.id===curMod);
+  const les = (mod?.lessons||[]).find(l=>l.id===curLes);
+  let filledAnswers = "";
+  MODULES.filter(m=>m.ready).forEach(m => {
+    (m.lessons||[]).forEach(l => {
+      const lkey = `${m.id}_${l.id}`;
+      const hasAns = l.tasks.some(t => answers[`${lkey}_${t.id}`]);
+      if (!hasAns) return;
+      filledAnswers += `\n\n--- ${m.tag}: ${l.title} ---\n`;
+      l.tasks.forEach(t => {
+        const v = answers[`${lkey}_${t.id}`];
+        if (v && (typeof v==="string"?v.trim():v.length)) filledAnswers += `${t.label}\n${Array.isArray(v)?v.join(", "):v}\n\n`;
+      });
+    });
+  });
+  return `You are a warm, knowledgeable membership business coach embedded inside the TME+ (The Membership Experience Plus) sidekick tool, built on Stu McLaren's proven membership framework.
+
+THE MEMBER YOU'RE COACHING:
+Name: ${ctx?.name||"the member"}
+Target market: ${ctx?.market||"not yet specified"}
+Area of focus: ${ctx?.focus||"not yet specified"}
+Identity: ${ctx?.identity||"not yet specified"}
+
+CURRENTLY WORKING ON: ${mod?.tag||""}: ${les?.title||""}
+
+THEIR ANSWERS SO FAR:${filledAnswers||"\n(Nothing filled in yet — they're just getting started)"}
+
+YOUR ROLE:
+- Be specific to THEIR membership idea, not generic
+- Reference their actual answers when relevant  
+- Keep responses concise — this is a sidebar coach, not a document
+- Use TME framework language (Messaging Map™, Circle of Awesomeness™, Success Path™)
+- Be encouraging but honest — push them to think deeper when needed
+- Don't repeat back everything they said — get to the insight quickly`;
+}
+
+async function sendMessage() {
+  const input = document.getElementById("cp-input");
+  const text  = input?.value?.trim();
+  if (!text || chatTyping) return;
+  input.value = ""; input.style.height = "auto";
+  sendMessageText(text);
+}
+
+async function sendMessageText(text) {
+  chatHistory.push({role:"user", content:text});
+  chatTyping = true; renderChatMessages();
+  const msgs    = chatHistory.map(m=>({role:m.role,content:m.content}));
+  const trimmed = msgs.length > 12 ? msgs.slice(-12) : msgs;
+  try {
+    const res  = await fetch("/api/claude", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:600,system:buildSystemPrompt(),messages:trimmed})});
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    chatHistory.push({role:"assistant", content:data.content?.map(b=>b.text||"").join("")||"Sorry, try again."});
+  } catch(e) {
+    chatHistory.push({role:"assistant", content:"Something went wrong — please try again in a moment."});
+  }
+  chatTyping = false; renderChatMessages();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const inp = document.getElementById("cp-input");
+  if (inp) {
+    inp.addEventListener("input", () => { inp.style.height="auto"; inp.style.height=Math.min(inp.scrollHeight,100)+"px"; });
+    inp.addEventListener("keydown", e => { if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();} });
+  }
+});
+
+// ── Render ─────────────────────────────────────────────────────
+function render() {
+  const app = document.getElementById("app"); app.innerHTML = "";
+  if (!ctx) { app.appendChild(renderSetup()); return; }
+
+  const pct = totalLessons() ? Math.round((totalDone()/totalLessons())*100) : 0;
+
+  // Header
+  const hdr = document.createElement("div"); hdr.id = "header";
+  const toggleBtn = document.createElement("button");
+  toggleBtn.className = "btn-claude-toggle" + (panelOpen?" active":"");
+  toggleBtn.id = "claude-toggle-btn";
+  toggleBtn.innerHTML = `<div class="claude-dot"></div><span>Ask Claude</span>`;
+  toggleBtn.addEventListener("click", togglePanel);
+  hdr.innerHTML = `<div class="hlogo"><span style="font-size:22px">🚀</span>
+    <div><div class="hlogo-title">TME+ Membership Sidekick</div><div class="hlogo-sub">Your companion through every module</div></div></div>
+    <div class="hprog"><div class="hprog-inner">
+      <div class="hprog-label">Overall Progress</div>
+      <div class="hprog-val">${totalDone()} / ${totalLessons()} lessons</div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+    </div></div>`;
+  const homeBtn = document.createElement("button");
+  homeBtn.className = "btn-home" + (curView==="home"?" ah":"");
+  homeBtn.innerHTML = `<span>🏠</span><span>Dashboard</span>`;
+  homeBtn.addEventListener("click", () => { curView="home"; render(); });
+
+  hdr.querySelector(".hprog").insertAdjacentElement("afterbegin", toggleBtn);
+  hdr.querySelector(".hprog").insertAdjacentElement("afterbegin", homeBtn);
+  app.appendChild(hdr);
+
+  const body = document.createElement("div"); body.id = "body-row";
+  body.appendChild(renderSidebar());
+
+  const content = document.createElement("div"); content.id = "content";
+  content.style.marginRight = panelOpen ? "360px" : "0";
+
+  if (curView === "home") {
+    renderHome(content);
+  } else {
+    const mod = MODULES.find(m=>m.id===curMod);
+    if (!mod || !mod.ready || !isModuleUnlocked(curMod)) {
+      content.appendChild(renderComingSoon(mod));
+    } else {
+      const lesson = (mod.lessons||[]).find(l=>l.id===curLes);
+      if (lesson) {
+        if (!isLessonUnlocked(curMod, curLes)) renderLockedLesson(lesson, mod, content);
+        else renderLesson(lesson, mod, content);
+      }
+    }
+  }
+  body.appendChild(content);
+  app.appendChild(body);
+  if (panelOpen) updatePanelContext();
+}
+
+// ── Sidebar ────────────────────────────────────────────────────
+function renderSidebar() {
+  const sb = document.createElement("div"); sb.id = "sidebar";
+  MODULES.forEach(mod => {
+    const group   = document.createElement("div"); group.className = "mod-group";
+    const isExp   = !!expanded[mod.id];
+    const modUnlocked = !mod.ready ? false : isModuleUnlocked(mod.id);
+    const mhdr    = document.createElement("div");
+    mhdr.className = "mod-header" + (curMod===mod.id?" active-mod":"") + (!modUnlocked?" locked-mod":"");
+
+    let rightIcon = "";
+    if (!mod.ready) rightIcon = `<span style="font-size:13px">🔒</span>`;
+    else if (!modUnlocked) rightIcon = `<span style="font-size:13px">🔒</span>`;
+    else rightIcon = `<span class="mod-chevron${isExp?" open":""}">›</span>`;
+
+    mhdr.innerHTML = `<div class="mod-dot" style="background:${modUnlocked?mod.color:"#555"}"></div>
+      <div class="mod-info"><div class="mod-tag">${mod.tag}</div><div class="mod-name${modUnlocked?"":" locked"}">${mod.name}</div></div>
+      ${rightIcon}`;
+
+    mhdr.addEventListener("click", () => {
+      if (!mod.ready || !modUnlocked) return;
+      expanded[mod.id] = !expanded[mod.id]; saveExp();
+      if (expanded[mod.id] && mod.lessons?.length) { curView="lesson"; curMod=mod.id; curLes=mod.lessons[0].id; curTab="do"; }
+      render();
+    });
+    group.appendChild(mhdr);
+
+    if (mod.ready && mod.lessons && modUnlocked) {
+      const list = document.createElement("div"); list.className = "lessons-list";
+      list.style.maxHeight = isExp ? "600px" : "0";
+      mod.lessons.forEach(l => {
+        const lkey      = `${mod.id}_${l.id}`;
+        const lUnlocked = isLessonUnlocked(mod.id, l.id);
+        const isActive  = curView==="lesson" && curMod===mod.id && curLes===l.id;
+        const isDone    = done[lkey];
+        const btn       = document.createElement("button");
+        btn.className   = "lesson-btn" + (isActive?" active":"") + (!lUnlocked?" lesson-locked":"");
+        const icon      = !lUnlocked ? "🔒" : isDone ? "✅" : "○";
+        btn.innerHTML   = `<span class="licon">${icon}</span><div><div class="ltag">${l.tag}</div><div class="ltitle">${l.title}</div>${!l.required?`<span class="optional-badge">optional</span>`:""}</div>`;
+        if (lUnlocked) {
+          btn.addEventListener("click", () => { curView="lesson"; curMod=mod.id; curLes=l.id; curTab="do"; expanded[mod.id]=true; saveExp(); chatHistory=[]; render(); if(panelOpen)updatePanelContext(); });
+        }
+        list.appendChild(btn);
+      });
+      group.appendChild(list);
+    }
+    sb.appendChild(group);
+  });
+
+  const footer = document.createElement("div"); footer.className = "sidebar-footer";
+  footer.innerHTML = `<div class="sf-label">Your Context</div><div class="sf-name">${esc(ctx.name)} · ${esc(ctx.market.length>35?ctx.market.slice(0,35)+"…":ctx.market)}</div>`;
+  const editBtn = document.createElement("button"); editBtn.className = "sf-edit"; editBtn.textContent = "Edit context";
+  editBtn.addEventListener("click", () => { ctx=null; render(); });
+  footer.appendChild(editBtn); sb.appendChild(footer);
+  return sb;
+}
+
+// ── Coming soon / locked module ────────────────────────────────
+function renderComingSoon(mod) {
+  const modUnlocked = mod?.ready ? isModuleUnlocked(mod.id) : false;
+  const wrap  = document.createElement("div"); wrap.style.cssText="display:flex;align-items:center;justify-content:center;height:100%;text-align:center;padding:60px 40px";
+  const inner = document.createElement("div"); inner.style.maxWidth = "380px";
+
+  if (mod?.ready && !modUnlocked) {
+    // Built but locked — find which module they need to finish
+    const mods = MODULES.filter(m=>m.ready);
+    const idx  = mods.findIndex(m=>m.id===mod.id);
+    const prev = idx > 0 ? mods[idx-1] : null;
+    const remaining = prev ? (prev.lessons||[]).filter(l=>l.required&&!done[`${prev.id}_${l.id}`]).length : 0;
+    inner.innerHTML = `<div style="font-size:48px;margin-bottom:16px">🔒</div>
+      <div style="display:inline-block;background:#fff3e0;color:#F07830;font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;margin-bottom:14px">COMPLETE PREVIOUS MODULE</div>
+      <div style="font-size:20px;font-weight:900;color:#1C2B1C;margin-bottom:8px">${mod.tag}: ${mod.name}</div>
+      <div style="font-size:13.5px;color:#888;line-height:1.65">Finish the ${remaining} remaining core lesson${remaining!==1?"s":""} in ${prev?.tag||"the previous module"} to unlock this module.</div>`;
+  } else {
+    inner.innerHTML = `<div style="font-size:48px;margin-bottom:16px">🔒</div>
+      <div style="display:inline-block;background:#f0f2f8;color:#888;font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;margin-bottom:14px">COMING SOON</div>
+      <div style="font-size:20px;font-weight:900;color:#1C2B1C;margin-bottom:8px">${mod?mod.tag+": "+mod.name:"Module"}</div>
+      <div style="font-size:13.5px;color:#888;line-height:1.65">This module's sidekick is being built. Your progress and context will carry forward automatically when it's ready.</div>`;
+  }
+  wrap.appendChild(inner); return wrap;
+}
+
+// ── Locked lesson ──────────────────────────────────────────────
+function renderLockedLesson(lesson, mod, content) {
+  const lessons = mod.lessons || [];
+  const idx     = lessons.findIndex(l=>l.id===lesson.id);
+  const prevLes = idx > 0 ? lessons[idx-1] : null;
+  const wrap    = document.createElement("div"); wrap.style.cssText="display:flex;align-items:center;justify-content:center;height:80%;text-align:center;padding:60px 40px";
+  const inner   = document.createElement("div"); inner.style.maxWidth = "360px";
+  inner.innerHTML = `<div class="locked-icon">🔒</div>
+    <div class="locked-title">${lesson.title}</div>
+    <div class="locked-text">Complete <strong>${prevLes?.title||"the previous lesson"}</strong> first — mark it complete using the button at the bottom of that lesson.</div>`;
+  if (prevLes) {
+    const btn = document.createElement("button"); btn.className = "locked-prev";
+    btn.textContent = `← Go back to ${prevLes.title}`;
+    btn.addEventListener("click", () => { curLes=prevLes.id; curTab="do"; render(); });
+    inner.appendChild(btn);
+  }
+  wrap.appendChild(inner); content.appendChild(wrap);
+}
+
+// ── Lesson ─────────────────────────────────────────────────────
+function renderLesson(lesson, mod, content) {
+  const lkey = `${mod.id}_${lesson.id}`;
+
+  // If this is the first deep dive and all cores just got done — show a banner
+  const firstOptional = (mod.lessons||[]).find(l=>!l.required);
+  const justUnlockedDives = lesson.id === firstOptional?.id && allCoresDone(mod.id);
+  if (justUnlockedDives) {
+    const banner = document.createElement("div"); banner.className = "unlock-banner";
+    banner.innerHTML = `<div class="unlock-banner-icon">🎉</div><div><div class="unlock-banner-title">Core lessons complete!</div><div class="unlock-banner-text">You've unlocked the Deep Dives — they're optional but worth exploring. Module 1 is now unlocked too!</div></div>`;
+    content.appendChild(banner);
+  }
+
+  const tag = document.createElement("div"); tag.className = "lesson-tag-bar"; tag.style.color = mod.color; tag.textContent = `${mod.tag} · ${lesson.tag}`;
+  const title = document.createElement("div"); title.className = "lesson-big-title"; title.textContent = lesson.title;
+  content.appendChild(tag); content.appendChild(title);
+
+  const tabRow = document.createElement("div"); tabRow.className = "tabs";
+  ["learn","do"].forEach(t => {
+    const tb = document.createElement("button"); tb.className = "tab-btn"+(curTab===t?" active":"");
+    tb.textContent = t==="learn" ? "📖 Learn" : "✏️ Do the Work";
+    tb.addEventListener("click", () => { curTab=t; render(); });
+    tabRow.appendChild(tb);
+  });
+  content.appendChild(tabRow);
+
+  const inner = document.createElement("div"); inner.style.maxWidth="640px";
+  if (curTab==="learn") renderLearn(lesson, mod, inner);
+  else renderDo(lesson, mod, lkey, inner);
+  content.appendChild(inner);
+}
+
+function renderLearn(lesson, mod, wrap) {
+  lesson.learn.sections.forEach(s => {
+    const card = document.createElement("div"); card.className = "learn-card";
+    const h = document.createElement("div"); h.className = "learn-heading"; h.textContent = s.h;
+    const ul = document.createElement("ul");
+    s.items.forEach(item => { const li=document.createElement("li"); li.textContent=item; ul.appendChild(li); });
+    card.appendChild(h); card.appendChild(ul); wrap.appendChild(card);
+  });
+  if (lesson.learn.mindset) {
+    const mc = document.createElement("div"); mc.className = "mindset-card";
+    const ml = document.createElement("div"); ml.className = "mindset-lbl"; ml.style.color=mod.color; ml.textContent="💡 MINDSET MOTIVATION";
+    const mt = document.createElement("p"); mt.className = "mindset-txt"; mt.textContent=`"${lesson.learn.mindset}"`;
+    mc.appendChild(ml); mc.appendChild(mt); wrap.appendChild(mc);
+  }
+  const btn = document.createElement("button"); btn.className="btn-nav btn-next"; btn.style.background=mod.color; btn.textContent="Ready to do the work → ✏️";
+  btn.addEventListener("click", () => { curTab="do"; render(); });
+  wrap.appendChild(btn);
+}
+
+function renderDo(lesson, mod, lkey, wrap) {
+  lesson.tasks.forEach((task,i) => {
+    const card = document.createElement("div"); card.className = "task-card";
+    const lbl  = document.createElement("div"); lbl.className = "task-lbl";
+    lbl.innerHTML = `<span class="task-num" style="color:${mod.color}">${i+1}. </span>${esc(task.label)}`;
+    card.appendChild(lbl);
+    const ak = `${lkey}_${task.id}`;
+
+    if (task.type==="textarea") {
+      const ta = document.createElement("textarea"); ta.placeholder=task.ph; ta.value=answers[ak]||"";
+      ta.addEventListener("input", () => { answers[ak]=ta.value; saveAns(); });
+      ta.addEventListener("focus", () => { ta.style.borderColor=mod.color; });
+      ta.addEventListener("blur",  () => { ta.style.borderColor="#e0e3f0"; });
+      card.appendChild(ta);
+    } else if (task.type==="radio") {
+      task.opts.forEach(opt => {
+        const lrow = document.createElement("label"); lrow.className="radio-opt"+(answers[ak]===opt?" sel":"");
+        lrow.style.borderColor=answers[ak]===opt?mod.color:"#e0e3f0";
+        if(answers[ak]===opt) lrow.style.background=`${mod.color}10`;
+        const inp = document.createElement("input"); inp.type="radio"; inp.name=ak; inp.checked=answers[ak]===opt; inp.style.accentColor=mod.color;
+        inp.addEventListener("change", () => { answers[ak]=opt; saveAns(); render(); });
+        lrow.appendChild(inp); lrow.appendChild(document.createTextNode(opt)); card.appendChild(lrow);
+      });
+    } else if (task.type==="checkbox") {
+      const cur = answers[ak]||[];
+      task.opts.forEach(opt => {
+        const lrow = document.createElement("label"); lrow.className="check-opt"+(cur.includes(opt)?" sel":"");
+        lrow.style.borderColor=cur.includes(opt)?mod.color:"#e0e3f0";
+        if(cur.includes(opt)) lrow.style.background=`${mod.color}10`;
+        const inp = document.createElement("input"); inp.type="checkbox"; inp.checked=cur.includes(opt); inp.style.accentColor=mod.color;
+        inp.addEventListener("change", () => { const p=answers[ak]||[]; answers[ak]=inp.checked?[...p,opt]:p.filter(v=>v!==opt); saveAns(); render(); });
+        lrow.appendChild(inp); lrow.appendChild(document.createTextNode(opt)); card.appendChild(lrow);
+      });
+    }
+    wrap.appendChild(card);
+  });
+
+  if (lesson.prompts?.length) {
+    const lbl = document.createElement("div"); lbl.className="prompt-section-lbl"; lbl.textContent="💬 ChatGPT Prompts — pre-filled with your context, ready to copy";
+    wrap.appendChild(lbl);
+    lesson.prompts.forEach(p => {
+      const card    = document.createElement("div"); card.className="prompt-card";
+      const heading = document.createElement("div"); heading.className="prompt-card-lbl"; heading.textContent=p.label;
+      const hint    = document.createElement("div"); hint.className="prompt-hint"; hint.textContent=p.hint;
+      const filled  = fillPrompt(p.template);
+      const box     = document.createElement("div"); box.className="prompt-box"; box.textContent=filled;
+      const ck      = `${lkey}_${p.label}`;
+      const btnRow  = document.createElement("div"); btnRow.className = "prompt-btn-row";
+      const cpBtn   = document.createElement("button"); cpBtn.className="btn-copy"+(copied[ck]?" copied":"");
+      cpBtn.innerHTML = copied[ck]?"✓ Copied!":"📋 Copy for ChatGPT";
+      cpBtn.addEventListener("click", () => { navigator.clipboard&&navigator.clipboard.writeText(filled); copied[ck]=true; render(); setTimeout(()=>{copied[ck]=false;render();},2000); });
+      const askBtn  = document.createElement("button"); askBtn.className="btn-ask-claude";
+      askBtn.innerHTML = "✨ Ask Claude to build this";
+      askBtn.addEventListener("click", () => {
+        if (!panelOpen) togglePanel();
+        else updatePanelContext();
+        setTimeout(() => sendMessageText(filled), panelOpen ? 0 : 300);
+      });
+      btnRow.appendChild(cpBtn); btnRow.appendChild(askBtn);
+      card.appendChild(heading); card.appendChild(hint); card.appendChild(box); card.appendChild(btnRow);
+      wrap.appendChild(card);
+    });
+  }
+
+  // Nav
+  const nav  = document.createElement("div"); nav.className="nav-row";
+  const left = document.createElement("div"); left.style.cssText="display:flex;gap:8px";
+  const lessons = (MODULES.find(m=>m.id===curMod)?.lessons)||[];
+  const li      = lessons.findIndex(l=>l.id===curLes);
+
+  if (li > 0 && isLessonUnlocked(curMod, lessons[li-1].id)) {
+    const prev = document.createElement("button"); prev.className="btn-nav btn-prev"; prev.textContent="← Previous";
+    prev.addEventListener("click", () => { curLes=lessons[li-1].id; curTab="do"; chatHistory=[]; render(); if(panelOpen)updatePanelContext(); });
+    left.appendChild(prev);
+  }
+  const nextLes = lessons[li+1];
+  if (nextLes && done[`${curMod}_${curLes}`] && isLessonUnlocked(curMod, nextLes.id)) {
+    const next = document.createElement("button"); next.className="btn-nav btn-next"; next.style.background=MODULES.find(m=>m.id===curMod).color; next.textContent="Next Lesson →";
+    next.addEventListener("click", () => { curLes=nextLes.id; curTab="do"; chatHistory=[]; render(); if(panelOpen)updatePanelContext(); });
+    left.appendChild(next);
+  }
+  nav.appendChild(left);
+
+  const doneBtn = document.createElement("button"); doneBtn.className="btn-done"+(done[`${curMod}_${curLes}`]?" is-done":"");
+  doneBtn.textContent = done[`${curMod}_${curLes}`] ? "✅ Marked Complete — click to undo" : "✓ Mark Lesson Complete";
+  doneBtn.addEventListener("click", () => {
+    const k = `${curMod}_${curLes}`;
+    done[k] = !done[k]; saveDone();
+    // Auto-advance to next lesson if marking done and next exists
+    if (done[k] && nextLes) { curLes=nextLes.id; curTab="learn"; chatHistory=[]; }
+    render(); if(panelOpen) updatePanelContext();
+  });
+  nav.appendChild(doneBtn);
+
+  // Download button when module cores are complete
+  if (allCoresDone(curMod)) {
+    const dlBtn = document.createElement("button");
+    dlBtn.className = "btn-nav btn-prev";
+    dlBtn.style.cssText = "display:flex;align-items:center;gap:5px";
+    dlBtn.innerHTML = "📥 Download Module Progress";
+    dlBtn.addEventListener("click", () => downloadModuleProgress(curMod));
+    nav.appendChild(dlBtn);
+  }
+
+  wrap.appendChild(nav);
+}
+
+// ── Home / Dashboard ───────────────────────────────────────────
+function renderHome(content) {
+  const hw = document.createElement("div"); hw.className = "hw";
+
+  // Find where to continue
+  let continueModId = null, continueLesId = null;
+  for (const mod of MODULES.filter(m=>m.ready && isModuleUnlocked(m.id))) {
+    for (const l of (mod.lessons||[])) {
+      if (!done[`${mod.id}_${l.id}`] && isLessonUnlocked(mod.id, l.id)) {
+        continueModId = mod.id; continueLesId = l.id; break;
+      }
+    }
+    if (continueModId) break;
+  }
+
+  const pct = totalLessons() ? Math.round((totalDone()/totalLessons())*100) : 0;
+  const greeting = document.createElement("div"); greeting.className = "hg";
+  greeting.textContent = `Welcome back, ${ctx?.name || "there"}!`;
+  hw.appendChild(greeting);
+
+  const sub = document.createElement("div"); sub.className = "hsubg";
+  sub.textContent = `You've completed ${totalDone()} of ${totalLessons()} lessons (${pct}%)`;
+  hw.appendChild(sub);
+
+  if (continueModId) {
+    const cMod = MODULES.find(m=>m.id===continueModId);
+    const cLes = (cMod?.lessons||[]).find(l=>l.id===continueLesId);
+    const cont = document.createElement("button"); cont.className = "hcont";
+    cont.innerHTML = `Continue: ${cMod?.tag} — ${cLes?.title} →`;
+    cont.addEventListener("click", () => {
+      curView="lesson"; curMod=continueModId; curLes=continueLesId; curTab="learn";
+      expanded[continueModId]=true; saveExp(); chatHistory=[]; render();
+    });
+    hw.appendChild(cont);
+  }
+
+  // Module cards
+  const st = document.createElement("div"); st.className = "hst"; st.textContent = "YOUR MODULES";
+  hw.appendChild(st);
+
+  const grid = document.createElement("div"); grid.className = "mcards";
+  MODULES.forEach(mod => {
+    const card = document.createElement("div");
+    const modUnlocked = mod.ready && isModuleUnlocked(mod.id);
+    card.className = "mcard" + (!modUnlocked?" mlk":"");
+
+    const lessons = mod.lessons || [];
+    const doneCnt = lessons.filter(l => done[`${mod.id}_${l.id}`]).length;
+    const totalCnt = lessons.length;
+    const modPct = totalCnt ? Math.round((doneCnt/totalCnt)*100) : 0;
+
+    const bar = document.createElement("div"); bar.className = "mcbar-bg";
+    const fill = document.createElement("div"); fill.className = "mcbar-fill";
+    fill.style.width = modPct + "%"; fill.style.background = mod.color;
+    bar.appendChild(fill); card.appendChild(bar);
+
+    const tag = document.createElement("div"); tag.className = "mctag"; tag.textContent = mod.tag;
+    const name = document.createElement("div"); name.className = "mcname"; name.textContent = mod.name;
+    const prog = document.createElement("div"); prog.className = "mcprog";
+    prog.innerHTML = `<span>${doneCnt}/${totalCnt} lessons</span><span>${modPct}%</span>`;
+    card.appendChild(tag); card.appendChild(name); card.appendChild(prog);
+
+    // Download button for completed modules
+    if (modUnlocked && doneCnt > 0 && allCoresDone(mod.id)) {
+      const dl = document.createElement("button");
+      dl.style.cssText = "margin-top:8px;width:100%;background:#f0f2f8;color:#555;border:none;border-radius:6px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s";
+      dl.textContent = "📥 Download Progress";
+      dl.addEventListener("click", (e) => { e.stopPropagation(); downloadModuleProgress(mod.id); });
+      card.appendChild(dl);
+    }
+
+    if (modUnlocked) {
+      card.addEventListener("click", () => {
+        curView="lesson"; curMod=mod.id; curLes=(mod.lessons||[])[0]?.id||"cl1"; curTab="learn";
+        expanded[mod.id]=true; saveExp(); chatHistory=[]; render();
+      });
+    }
+    grid.appendChild(card);
+  });
+  hw.appendChild(grid);
+
+  // Recent answers overview
+  const answeredMods = MODULES.filter(m => m.ready && (m.lessons||[]).some(l => l.tasks.some(t => {
+    const v = answers[`${m.id}_${l.id}_${t.id}`];
+    return v && (typeof v === "string" ? v.trim() : v.length);
+  })));
+  if (answeredMods.length) {
+    const ost = document.createElement("div"); ost.className = "hst"; ost.textContent = "YOUR KEY DECISIONS";
+    hw.appendChild(ost);
+    const ocards = document.createElement("div"); ocards.className = "ocards";
+    answeredMods.forEach(mod => {
+      (mod.lessons||[]).forEach(l => {
+        const lkey = `${mod.id}_${l.id}`;
+        l.tasks.forEach(t => {
+          const v = answers[`${lkey}_${t.id}`];
+          if (!v || (typeof v==="string" && !v.trim()) || (Array.isArray(v) && !v.length)) return;
+          const display = Array.isArray(v) ? v.join(", ") : v;
+          if (display.length < 5) return;
+          const oc = document.createElement("div"); oc.className = "ocard";
+          oc.addEventListener("click", () => {
+            curView="lesson"; curMod=mod.id; curLes=l.id; curTab="do";
+            expanded[mod.id]=true; saveExp(); chatHistory=[]; render();
+          });
+          const olbl = document.createElement("div"); olbl.className = "olbl"; olbl.textContent = `${mod.tag} · ${l.title}`;
+          const oval = document.createElement("div"); oval.className = "oval"; oval.textContent = display.length > 120 ? display.slice(0,120)+"…" : display;
+          oc.appendChild(olbl); oc.appendChild(oval); ocards.appendChild(oc);
+        });
+      });
+    });
+    // Only show first 8
+    while (ocards.children.length > 8) ocards.removeChild(ocards.lastChild);
+    hw.appendChild(ocards);
+  }
+
+  content.appendChild(hw);
+}
+
+// ── Download Progress ──────────────────────────────────────────
+function downloadModuleProgress(modId) {
+  const mod = MODULES.find(m=>m.id===modId);
+  if (!mod) return;
+
+  let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${mod.tag}: ${mod.name} — Progress Report</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Georgia,serif;max-width:700px;margin:0 auto;padding:40px 30px;color:#222;line-height:1.7}
+  h1{font-size:24px;font-weight:900;color:#1C2B1C;margin-bottom:4px;font-family:system-ui,sans-serif}
+  .sub{font-size:13px;color:#888;margin-bottom:30px;border-bottom:2px solid ${mod.color};padding-bottom:14px}
+  .ctx{font-size:12px;color:#666;background:#f8f9fa;padding:12px 16px;border-radius:8px;margin-bottom:28px;line-height:1.8}
+  .ctx strong{color:#1C2B1C}
+  h2{font-size:16px;font-weight:800;color:${mod.color};margin:28px 0 4px;font-family:system-ui,sans-serif;border-left:3px solid ${mod.color};padding-left:10px}
+  h3{font-size:13px;font-weight:700;color:#1C2B1C;margin:16px 0 6px;font-family:system-ui,sans-serif}
+  .answer{font-size:13px;color:#333;background:#f5f6fa;padding:10px 14px;border-radius:6px;margin-bottom:12px;white-space:pre-wrap;border-left:2px solid #ddd}
+  .empty{font-size:12px;color:#ccc;font-style:italic;margin-bottom:12px}
+  .done-badge{display:inline-block;background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:8px;font-family:system-ui,sans-serif}
+  .footer{margin-top:40px;padding-top:14px;border-top:1px solid #eee;font-size:11px;color:#bbb;text-align:center}
+  @media print{body{padding:20px}h2{break-before:auto}@page{margin:1.5cm}}
+</style></head><body>`;
+
+  html += `<h1>${esc(mod.tag)}: ${esc(mod.name)}</h1>`;
+  html += `<div class="sub">TME+ Membership Sidekick — Progress Report · Generated ${new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"})}</div>`;
+  html += `<div class="ctx"><strong>Name:</strong> ${esc(ctx?.name||"—")}<br><strong>Target Market:</strong> ${esc(ctx?.market||"—")}<br><strong>Focus:</strong> ${esc(ctx?.focus||"—")}<br><strong>Identity:</strong> ${esc(ctx?.identity||"—")}</div>`;
+
+  (mod.lessons||[]).forEach(l => {
+    const lkey = `${mod.id}_${l.id}`;
+    const isDone = done[lkey];
+    const hasAnswers = l.tasks.some(t => {
+      const v = answers[`${lkey}_${t.id}`];
+      return v && (typeof v==="string" ? v.trim() : v.length);
+    });
+    if (!hasAnswers && !isDone) return;
+
+    html += `<h2>${esc(l.tag)}: ${esc(l.title)}${isDone?'<span class="done-badge">COMPLETE</span>':""}</h2>`;
+
+    l.tasks.forEach(t => {
+      const v = answers[`${lkey}_${t.id}`];
+      const display = v ? (Array.isArray(v) ? v.join(", ") : v) : "";
+      html += `<h3>${esc(t.label)}</h3>`;
+      if (display.trim()) {
+        html += `<div class="answer">${esc(display)}</div>`;
+      } else {
+        html += `<div class="empty">Not yet answered</div>`;
+      }
+    });
+  });
+
+  html += `<div class="footer">Generated by TME+ Membership Sidekick · ${esc(ctx?.name||"")} · ${new Date().toLocaleDateString()}</div>`;
+  html += `</body></html>`;
+
+  const blob = new Blob([html], {type:"text/html"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${mod.tag.replace(/\s+/g,"-")}_${mod.name}_Progress.html`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ── Setup ──────────────────────────────────────────────────────
+function renderSetup() {
+  const wrap  = document.createElement("div"); wrap.style.cssText="display:flex;flex-direction:column;flex:1";
+  const inner = document.createElement("div"); inner.className="setup-wrap";
+  const card  = document.createElement("div"); card.className="setup-card";
+  card.innerHTML=`<div style="text-align:center;font-size:42px;margin-bottom:10px">🚀</div>
+    <h1>Welcome to Your TME+ Sidekick</h1>
+    <p>Set up your context once and Claude — your built-in membership coach — will know exactly who you are and what you're building as you work through every module.</p>`;
+
+  const fields=[{k:"name",lbl:"Your first name",ph:"e.g. Sarah"},{k:"market",lbl:"My target market are…",ph:"e.g. portrait photographers who want to build recurring income"},{k:"focus",lbl:"My area of focus is…",ph:"e.g. helping them launch and grow a membership community"},{k:"identity",lbl:"I am a…",ph:"e.g. business coach and educator for creative entrepreneurs"}];
+  const form={name:"",market:"",focus:"",identity:""};
+
+  fields.forEach(f => {
+    const lbl=document.createElement("label"); lbl.textContent=f.lbl;
+    const inp=document.createElement("input"); inp.placeholder=f.ph;
+    inp.addEventListener("input",()=>{form[f.k]=inp.value.trim();btn.disabled=!fields.every(x=>form[x.k]);});
+    card.appendChild(lbl); card.appendChild(inp);
+  });
+
+  const btn=document.createElement("button"); btn.className="btn-primary"; btn.textContent="Let's Get Started →"; btn.disabled=true;
+  btn.addEventListener("click",()=>{ctx={...form};saveCtx();curView="home";curMod="m0";curLes="cl1";curTab="learn";expanded={m0:true};saveExp();render();});
+  card.appendChild(btn);
+
+  const note=document.createElement("p"); note.style.cssText="text-align:center;font-size:11px;color:#bbb;margin-top:10px"; note.textContent="You can update this anytime from the sidebar. Your answers save automatically.";
+  card.appendChild(note); inner.appendChild(card); wrap.appendChild(inner);
+  return wrap;
+}
+
+render();
+</script>
+</body>
+</html>
