@@ -155,6 +155,24 @@ textarea{width:100%;min-height:86px;padding:9px 11px;border:1.5px solid #e0e3f0;
 .btn-bp{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.75);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;flex-shrink:0}
 .btn-bp:hover{background:rgba(255,255,255,.15);color:#fff}
 .btn-hbg{display:none;background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:8px;padding:7px 10px;font-size:16px;cursor:pointer;flex-shrink:0}
+/* SEARCH */
+.search-wrap{position:relative;flex-shrink:0}
+.btn-search{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;flex-shrink:0}
+.btn-search:hover{background:rgba(255,255,255,.2)}
+.search-drop{position:absolute;top:calc(100% + 6px);right:0;width:340px;background:#fff;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.18);z-index:200;overflow:hidden;display:none}
+.search-drop.open{display:block}
+.search-input{width:100%;padding:11px 14px;border:none;border-bottom:1px solid #eee;font-size:13px;font-family:inherit;outline:none}
+.search-results{max-height:320px;overflow-y:auto;padding:6px 0}
+.search-item{display:flex;align-items:flex-start;gap:10px;padding:9px 14px;cursor:pointer;transition:background .1s;border-bottom:1px solid #f5f5f5}
+.search-item:hover{background:#f8f9ff}
+.search-item:last-child{border-bottom:none}
+.si-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.si-tag{font-size:9px;font-weight:800;letter-spacing:.5px;color:#aaa;text-transform:uppercase}
+.si-title{font-size:12.5px;font-weight:600;color:#1C2B1C;line-height:1.3}
+.si-match{font-size:11px;color:#888;line-height:1.4;margin-top:2px}
+.si-match mark{background:#fff3cd;color:#333;border-radius:2px;padding:0 1px}
+.search-empty{padding:20px 14px;text-align:center;font-size:12.5px;color:#bbb}
+@media(max-width:680px){.search-drop{width:calc(100vw - 20px);right:-40px}.btn-search span{display:none}}
 /* HOME */
 .hw{padding:22px 26px;overflow-y:auto;flex:1}
 .hg{font-size:21px;font-weight:900;color:#1C2B1C;margin-bottom:3px}
@@ -209,7 +227,7 @@ textarea{width:100%;min-height:86px;padding:9px 11px;border:1.5px solid #e0e3f0;
 .mob-ov.vis{display:block}
 @media(max-width:680px){
   .btn-hbg{display:flex;align-items:center}
-  .btn-claude-toggle span,.btn-bp span,.hlogo-sub{display:none}
+  .btn-claude-toggle span,.btn-bp span,.btn-home span:last-child,.hlogo-sub{display:none}
   #sidebar{position:fixed;left:-215px;top:0;height:100vh;z-index:150;transition:left .25s;box-shadow:4px 0 20px rgba(0,0,0,.15)}
   #sidebar.mob-o{left:0}
   #content,.hw{padding:14px}
@@ -228,7 +246,7 @@ textarea{width:100%;min-height:86px;padding:9px 11px;border:1.5px solid #e0e3f0;
   <div class="cp-header">
     <div class="cp-title">
       <span style="font-size:20px">✦</span>
-      <div><div class="cp-title-text">Ask Claude</div><div class="cp-subtitle">Your membership coach — knows your work so far</div></div>
+      <div><div class="cp-title-text">Ask AI</div><div class="cp-subtitle">Your membership coach — knows your work so far</div></div>
     </div>
     <button class="cp-close" onclick="togglePanel()">✕</button>
   </div>
@@ -272,7 +290,7 @@ const MODULES = [
           {id:"howhelp",label:"I can help them get there by:",type:"textarea",ph:"What will you teach, share, or provide?"}
         ],
         prompts:[
-          {label:"Explore Your Role in the Membership",hint:"Not sure what role feels right? Copy this into ChatGPT.",template:"My target market are [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'm unsure what role I want to play in my membership. Can you give me 4–5 examples of how different membership models work for people who prefer teaching live vs. curating content behind the scenes? Make them relevant to my audience and area of focus."},
+          {label:"Explore Your Role in the Membership",hint:"Not sure what role feels right? Copy this into AI.",template:"My target market are [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'm unsure what role I want to play in my membership. Can you give me 4–5 examples of how different membership models work for people who prefer teaching live vs. curating content behind the scenes? Make them relevant to my audience and area of focus."},
           {label:"Uncover Your Audience's Biggest Pain Points",hint:"Want to go deeper on what your audience is really struggling with?",template:"My target market are [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nWhat are the 5 most pressing problems my audience needs ongoing help solving that my membership could address? Be specific and use the language my audience would actually use."}
         ],
         suggestions:["Does my membership idea make sense given who I'm serving?","What role should I play in my membership?","Help me think through what my audience is really struggling with"]
@@ -371,7 +389,7 @@ const MODULES = [
           {id:"first_result",label:"The first result I want my members to achieve is:",type:"textarea",ph:"What's the first small, meaningful win?"},
           {id:"story_sys",label:"How I'll collect member stories and wins:",type:"textarea",ph:"Google Doc? Airtable? Community prompts? Start simple."},
           {id:"exist_wins",label:"Wins I've already created (if serving people now):",type:"textarea",ph:"Any results or transformations — tiny ones count."},
-          {id:"coa_template",label:"My story collection template:",type:"textarea",ph:"Use the ChatGPT prompt below, then paste and edit here..."}
+          {id:"coa_template",label:"My story collection template:",type:"textarea",ph:"Use the AI prompt below, then paste and edit here..."}
         ],
         prompts:[
           {label:"Build Your Story Collection Template",hint:"Create a repeatable system for capturing member wins.",template:"My target market are [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nCreate a simple, repeatable template for collecting Circle of Awesomeness™ stories. Capture:\n• Stage / type of win\n• What they struggled with before\n• The result achieved\n• What changed after\n• Spot for screenshot or quote"},
@@ -415,7 +433,7 @@ const MODULES = [
         },
         tasks:[
           {id:"problems", label:"13 problems my audience faces (one per line):", type:"textarea", ph:"1. They don't know where to start\n2. They feel overwhelmed by options\n3. They struggle to stay consistent\n... (keep going to 13!)"},
-          {id:"solutions", label:"My Problem-Solution content plan (paste your ChatGPT output here and edit it to make it yours):", type:"textarea", ph:"Problem 1: [problem]\n- Solution 1:\n- Solution 2:\n- Solution 3:\n- Solution 4:\n\nProblem 2: [problem]..."}
+          {id:"solutions", label:"My Problem-Solution content plan (paste your AI output here and edit it to make it yours):", type:"textarea", ph:"Problem 1: [problem]\n- Solution 1:\n- Solution 2:\n- Solution 3:\n- Solution 4:\n\nProblem 2: [problem]..."}
         ],
         prompts:[
           {label:"Generate Your Full 12-Month Content Plan", hint:"This prompt gives you 13 problems + 4 solutions each — a full year of content in one go.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'm creating content for [MARKET] around the topic of [FOCUS].\nPlease help me brainstorm 13 of the most common problems or challenges this audience faces related to this topic.\nThen, for each problem, give me 4 solution-focused content ideas.\nThese could be tips, tools, templates, encouragement, or quick wins — anything that would help them make progress.\n\nBONUS: Organize the results in a table format with:\n• One row per problem\n• Each row showing the 4 solutions side-by-side"}
@@ -453,8 +471,8 @@ const MODULES = [
           mindset:"Perfection is the enemy of progress. Keep it simple and focus on delivering real value to your audience."
         },
         tasks:[
-          {id:"top10q", label:"My top 10 audience questions (use the ChatGPT prompt below to brainstorm):", type:"textarea", ph:"1.\n2.\n3.\n4.\n5.\n6.\n7.\n8.\n9.\n10."},
-          {id:"answers", label:"My answers to each question (paste and edit your ChatGPT output):", type:"textarea", ph:"Q1: [question]\nA: [your answer in your own voice]\n\nQ2: [question]\nA: [your answer]..."},
+          {id:"top10q", label:"My top 10 audience questions (use the AI prompt below to brainstorm):", type:"textarea", ph:"1.\n2.\n3.\n4.\n5.\n6.\n7.\n8.\n9.\n10."},
+          {id:"answers", label:"My answers to each question (paste and edit your AI output):", type:"textarea", ph:"Q1: [question]\nA: [your answer in your own voice]\n\nQ2: [question]\nA: [your answer]..."},
           {id:"guide_status", label:"Where I'm at with my Answer Guide:", type:"radio", opts:["Not started yet","Questions brainstormed","Answers drafted","Google Doc created","Designed and ready to share"]}
         ],
         prompts:[
@@ -515,7 +533,7 @@ const MODULES = [
         tasks:[
           {id:"path_name", label:"The name of my Success Path™:", type:"textarea", ph:"e.g. 'The Confident Homeschool Journey' or 'The Portrait Photographer's Roadmap'"},
           {id:"num_stages", label:"How many stages will my Success Path™ have?", type:"radio", opts:["3 stages","4 stages","5 stages (recommended)","6 stages","7 stages"]},
-          {id:"stages", label:"My stage names and descriptions (paste your ChatGPT output here, then make it yours):", type:"textarea", ph:"Stage 1: [Name]\nDescription: [What are they thinking, feeling, doing at this stage?]\nMilestones:\n- \nAction Items:\n- \n\nStage 2: [Name]..."},
+          {id:"stages", label:"My stage names and descriptions (paste your AI output here, then make it yours):", type:"textarea", ph:"Stage 1: [Name]\nDescription: [What are they thinking, feeling, doing at this stage?]\nMilestones:\n- \nAction Items:\n- \n\nStage 2: [Name]..."},
         ],
         prompts:[
           {label:"Map Out Your Full Success Path™", hint:"Use this to generate all stages, descriptions, milestones and action items in one go.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI would like your help mapping out a Success Path™ that takes my members from where they are now to [describe the final transformation].\n\nI would like 5 stages.\n\nPlease include for each stage:\n• The stage name\n• A description of what the member is thinking, feeling, and doing at this stage\n• 3 key milestones (specific, yes/no checkpoints)\n• 2–3 action items to support each milestone\n\nAssume members are starting from scratch.\n\nDo you understand?"}
@@ -553,7 +571,7 @@ const MODULES = [
           {id:"clarity_plan", label:"How I'll help new members find their starting point:", type:"textarea", ph:"Intake survey? 'Start Here' page? Pointing them to their Success Path™ stage?"},
           {id:"connection_plan", label:"How I'll help new members make their first connection:", type:"textarea", ph:"Welcome post questions? Member directory? Welcome team? Introduction prompt?"},
           {id:"progress_plan", label:"The first win I'll help new members get within their first week:", type:"textarea", ph:"Complete a checklist? Download a template? Post in the community? Finish one lesson?"},
-          {id:"welcome_post", label:"My welcome post (use the ChatGPT prompt below, then rewrite it in your voice):", type:"textarea", ph:"Paste and edit your welcome message here — make sure it sounds like YOU, not a template..."}
+          {id:"welcome_post", label:"My welcome post (use the AI prompt below, then rewrite it in your voice):", type:"textarea", ph:"Paste and edit your welcome message here — make sure it sounds like YOU, not a template..."}
         ],
         prompts:[
           {label:"Write Your Member Welcome Post", hint:"Use this to draft a warm, engaging welcome post for your community.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nI'd like to write a warm and welcoming kickoff post for my membership community. I'd like the tone to be [warm / encouraging / playful — customize this].\n\nMy membership is called [YOUR MEMBERSHIP NAME]. It's designed to help [MARKET] achieve [describe the transformation].\n\nThis post should:\n• Welcome members into the community\n• Give them 3 simple action steps to get engaged\n• Include 2–3 intro questions they can answer in the comments to build connection\n• Include a bonus action (like posting a photo or sharing a win)\n\nPlease keep it warm and real — not corporate or stiff."},
@@ -573,7 +591,7 @@ const MODULES = [
         },
         tasks:[
           {id:"intro_script", label:"My core content intro video script (draft):", type:"textarea", ph:"Overview of your Success Path™. How to use these videos. Where to start. Keep it under 2 minutes."},
-          {id:"stage_scripts", label:"My stage video scripts (one per stage — paste your ChatGPT output then edit):", type:"textarea", ph:"Stage 1 script:\n[Welcome → acknowledge where they're at → what to focus on → mistake to avoid → call to action]\n\nStage 2 script:..."},
+          {id:"stage_scripts", label:"My stage video scripts (one per stage — paste your AI output then edit):", type:"textarea", ph:"Stage 1 script:\n[Welcome → acknowledge where they're at → what to focus on → mistake to avoid → call to action]\n\nStage 2 script:..."},
           {id:"summary_script", label:"My summary/wrap-up video script:", type:"textarea", ph:"Recap the Success Path™, briefly revisit each stage, tell them what to do next, leave them motivated and excited."}
         ],
         prompts:[
@@ -610,8 +628,8 @@ const MODULES = [
           mindset:"Planning a year of content doesn't take a year — it takes a focused few hours. When you simplify the system, you give yourself back the most precious resource: time."
         },
         tasks:[
-          {id:"calendar", label:"My 12-month content calendar (use the ChatGPT prompt below, then customise):", type:"textarea", ph:"Jan: Topic/focus — Deliverable 1: — Deliverable 2:\nFeb: Topic/focus — Deliverable 1: — Deliverable 2:\nMar: ...\n(Continue for all 12 months)"},
-          {id:"templates", label:"My content templates for each deliverable (paste and edit from ChatGPT):", type:"textarea", ph:"Masterclass template:\n1. Opening hook\n2. Why this matters\n3. Core teaching\n4. Mistakes to avoid\n5. Action step\n6. Encouraging close\n\nQ&A template: ..."},
+          {id:"calendar", label:"My 12-month content calendar (use the AI prompt below, then customise):", type:"textarea", ph:"Jan: Topic/focus — Deliverable 1: — Deliverable 2:\nFeb: Topic/focus — Deliverable 1: — Deliverable 2:\nMar: ...\n(Continue for all 12 months)"},
+          {id:"templates", label:"My content templates for each deliverable (paste and edit from AI):", type:"textarea", ph:"Masterclass template:\n1. Opening hook\n2. Why this matters\n3. Core teaching\n4. Mistakes to avoid\n5. Action step\n6. Encouraging close\n\nQ&A template: ..."},
           {id:"batch_plan", label:"My batching plan — when I'll create content in advance:", type:"textarea", ph:"e.g. I'll batch 3 months of masterclasses every quarter in the first week of the month. I'll record all January–March content in December."}
         ],
         prompts:[
@@ -635,14 +653,14 @@ const MODULES = [
           mindset:"Be confident in your beliefs and your ideal audience will be drawn to the authenticity you bring. Don't be afraid to show who you really are!"
         },
         tasks:[
-          {id:"top_values", label:"My top 5 core values (use the ChatGPT prompts below to explore):", type:"textarea", ph:"e.g. Simplicity, Growth, Empowerment, Community, Honesty\n\nFor each, write one sentence on what it means for how you show up..."},
+          {id:"top_values", label:"My top 5 core values (use the AI prompts below to explore):", type:"textarea", ph:"e.g. Simplicity, Growth, Empowerment, Community, Honesty\n\nFor each, write one sentence on what it means for how you show up..."},
           {id:"beliefs", label:"3–5 beliefs or philosophies that guide how I run my business:", type:"textarea", ph:"e.g. 'I believe small, consistent actions are more powerful than big unsustainable ones'\n'I believe every member deserves a clear path, not just more content'"},
           {id:"anti_values", label:"What I DON'T stand for (anti-values that reveal what I DO believe):", type:"textarea", ph:"e.g. I don't believe in hustle culture → I value sustainable, joyful business\nI don't believe in information dumping → I value clarity and quick wins"},
           {id:"belief_statements", label:"My 'Here's what we believe' statements (bold, real, uniquely you):", type:"textarea", ph:"We believe...\nWe believe...\nWe believe...\n(Aim for 5–7 punchy statements you could put on your website or in your marketing)"},
-          {id:"about_paragraph", label:"My 'What I stand for' paragraph (for my website or About page):", type:"textarea", ph:"Use the ChatGPT prompt below to draft it, then rewrite it in your own voice..."}
+          {id:"about_paragraph", label:"My 'What I stand for' paragraph (for my website or About page):", type:"textarea", ph:"Use the AI prompt below to draft it, then rewrite it in your own voice..."}
         ],
         prompts:[
-          {label:"Discover Your Top 5 Core Values", hint:"Use this to uncover the values that should drive your brand and membership.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nHelp me identify the top 5 values that are most important to me in life and business.\n\nHere are a few things I care about: [ADD ANY IDEAS — or leave blank and ask Claude to suggest based on your audience and focus]\n\nFor each value, please:\n• Name the value\n• Explain what it means in the context of my membership and audience\n• Give one example of how it could show up in my marketing or member experience"},
+          {label:"Discover Your Top 5 Core Values", hint:"Use this to uncover the values that should drive your brand and membership.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nHelp me identify the top 5 values that are most important to me in life and business.\n\nHere are a few things I care about: [ADD ANY IDEAS — or leave blank and ask AI to suggest based on your audience and focus]\n\nFor each value, please:\n• Name the value\n• Explain what it means in the context of my membership and audience\n• Give one example of how it could show up in my marketing or member experience"},
           {label:"Clarify What You Don't Stand For", hint:"Your anti-values reveal just as much as your values — use this to get clear on both.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nWhat trends, behaviours, or messages in my industry do I likely disagree with or want to push back against?\n\nPlease:\n1. Suggest 3–5 'anti-values' that don't align with my mission\n2. For each, explain what positive value it reveals about me\n3. Suggest how I could reference this in my marketing to attract the right people and repel the wrong ones"},
           {label:"Write Your 'What We Believe' Statements + About Paragraph", hint:"Turn your values into bold, shareable belief statements and a paragraph for your website.", template:"My target market is [MARKET]. My area of focus is [FOCUS]. I am a [IDENTITY].\n\nDo you understand?\n\nBased on my values and beliefs, please help me write:\n\n1. A list of 6–8 bold 'Here's what we believe' statements — punchy, real, and uniquely mine. Start each with 'We believe...'\n\n2. A short paragraph (3–5 sentences) I could use on my website or About page that clearly communicates what I stand for, what I'm against, and who I'm for.\n\nUse a [warm / conversational / bold — customize this] tone."}
         ],
@@ -660,7 +678,7 @@ const MODULES = [
         tasks:[
           {id:"model_choice", label:"My marketing model:", type:"radio", opts:["Open — always available to join","Closed — opens a limited number of times per year","Not decided yet"]},
           {id:"model_why", label:"Why this model is the right fit for my audience and membership:", type:"textarea", ph:"Does your audience need immediate access? Do you want a focused launch push? What fits your energy and business stage?"},
-          {id:"open_promos", label:"If Open model — my 12 monthly urgency tactics or incentives (use the ChatGPT prompt below):", type:"textarea", ph:"Jan: [bonus or incentive + message angle]\nFeb: [bonus or incentive + message angle]\n... (continue for all 12 months)"},
+          {id:"open_promos", label:"If Open model — my 12 monthly urgency tactics or incentives (use the AI prompt below):", type:"textarea", ph:"Jan: [bonus or incentive + message angle]\nFeb: [bonus or incentive + message angle]\n... (continue for all 12 months)"},
           {id:"closed_timing", label:"If Closed model — when I'll open enrollment (months + how many times per year):", type:"textarea", ph:"e.g. April and September — 2 times per year\nOr: January, May, and September — 3 times per year"}
         ],
         prompts:[
@@ -716,7 +734,7 @@ const MODULES = [
         },
         tasks:[
           {id:"pricing_model", label:"My pricing model:", type:"radio", opts:["Monthly subscription only","Monthly + Annual option","Upfront fee + Monthly","Fixed-term","Trial + Monthly","Not decided yet"]},
-          {id:"price_point", label:"My founding member price point (use the ChatGPT prompt below to explore options):", type:"textarea", ph:"Monthly: $___/month\nAnnual: $___/year\nFounding member special: $___ (locked in for life)"},
+          {id:"price_point", label:"My founding member price point (use the AI prompt below to explore options):", type:"textarea", ph:"Monthly: $___/month\nAnnual: $___/year\nFounding member special: $___ (locked in for life)"},
           {id:"price_rationale", label:"Why this price makes sense for my audience and market:", type:"textarea", ph:"What are competitors charging? Where does my price sit relative to them? What does this price signal to potential members?"}
         ],
         prompts:[
@@ -849,7 +867,7 @@ const MODULES = [
           mindset:"When you show up with purpose and clarity across all five phases, you build trust, belief, desire, and long-term commitment."
         },
         tasks:[
-          {id:"full_plan", label:"My full launch plan (use the ChatGPT prompt below, then make it yours):", type:"textarea", ph:"Connection phase — what I'll share and where:\n\nAwareness phase — stories and content I'll create:\n\nDesire phase — how I'll deliver my 3-part training:\n\nPurchase phase — what will be live and what I'll do each day:\n\nWow phase — how I'll welcome and onboard new members:"},
+          {id:"full_plan", label:"My full launch plan (use the AI prompt below, then make it yours):", type:"textarea", ph:"Connection phase — what I'll share and where:\n\nAwareness phase — stories and content I'll create:\n\nDesire phase — how I'll deliver my 3-part training:\n\nPurchase phase — what will be live and what I'll do each day:\n\nWow phase — how I'll welcome and onboard new members:"},
           {id:"launch_style_confirm", label:"My final launch style decision:", type:"textarea", ph:"Based on everything you've learned — what does your launch actually look like? Be specific about format, platform, timeline, and your personal role."}
         ],
         prompts:[
@@ -914,7 +932,7 @@ const MODULES = [
           mindset:"Engagement isn't about doing everything — it's about showing up consistently and intentionally. Small actions, like a warm welcome or a simple challenge, can spark a big connection."
         },
         tasks:[
-          {id:"purpose", label:"My community's purpose statement:", type:"textarea", ph:"Use the ChatGPT prompt below to draft it, then rewrite it in your voice. It should explain how the community supports the transformation and what members will feel when they reach their goals."},
+          {id:"purpose", label:"My community's purpose statement:", type:"textarea", ph:"Use the AI prompt below to draft it, then rewrite it in your voice. It should explain how the community supports the transformation and what members will feel when they reach their goals."},
           {id:"culture", label:"My community culture statement + 3–5 community guidelines:", type:"textarea", ph:"Culture statement: [What's the vibe? What do you stand for as a community?]\n\nGuidelines:\n1. \n2. \n3. \n4. \n5. "},
           {id:"leadership", label:"My leadership style and how I'll show up as community leader:", type:"textarea", ph:"How will you show up consistently? How will you handle hard moments? What does care look like in practice?"},
           {id:"communication", label:"My community communication rhythm:", type:"textarea", ph:"How often will you post in the community? Email members? What types of content will you rotate through? (e.g. weekly check-in post, monthly wins celebration, mid-month pulse check)"}
@@ -1022,6 +1040,23 @@ let panelOpen    = false;
 let chatHistory  = [];
 let chatTyping   = false;
 let curView      = "home";
+let mobSidebar   = false;
+
+function toggleMobSidebar() {
+  mobSidebar = !mobSidebar;
+  const sb = document.getElementById("sidebar");
+  const ov = document.getElementById("mob-overlay");
+  if (sb) sb.classList.toggle("mob-o", mobSidebar);
+  if (ov) ov.classList.toggle("vis", mobSidebar);
+}
+
+function closeMobSidebar() {
+  mobSidebar = false;
+  const sb = document.getElementById("sidebar");
+  const ov = document.getElementById("mob-overlay");
+  if (sb) sb.classList.remove("mob-o");
+  if (ov) ov.classList.remove("vis");
+}
 
 function saveCtx()  { localStorage.setItem(SK_CTX,  JSON.stringify(ctx));     }
 function saveAns()  { localStorage.setItem(SK_ANS,  JSON.stringify(answers)); }
@@ -1103,14 +1138,14 @@ function renderChatMessages() {
 
   chatHistory.forEach(msg => {
     const wrap   = document.createElement("div"); wrap.className = `msg msg-${msg.role==="user"?"user":"claude"}`;
-    const lbl    = document.createElement("div"); lbl.className = "msg-label"; lbl.textContent = msg.role==="user" ? (ctx?.name||"You") : "Claude";
+    const lbl    = document.createElement("div"); lbl.className = "msg-label"; lbl.textContent = msg.role==="user" ? (ctx?.name||"You") : "AI Coach";
     const bubble = document.createElement("div"); bubble.className = "msg-bubble"; bubble.textContent = msg.content;
     wrap.appendChild(lbl); wrap.appendChild(bubble); container.appendChild(wrap);
   });
 
   if (chatTyping) {
     const wrap   = document.createElement("div"); wrap.className = "msg msg-claude";
-    const lbl    = document.createElement("div"); lbl.className = "msg-label"; lbl.textContent = "Claude";
+    const lbl    = document.createElement("div"); lbl.className = "msg-label"; lbl.textContent = "AI Coach";
     const typing = document.createElement("div"); typing.className = "cp-typing";
     typing.innerHTML = "<span></span><span></span><span></span>";
     wrap.appendChild(lbl); wrap.appendChild(typing); container.appendChild(wrap);
@@ -1199,7 +1234,7 @@ function render() {
   const toggleBtn = document.createElement("button");
   toggleBtn.className = "btn-claude-toggle" + (panelOpen?" active":"");
   toggleBtn.id = "claude-toggle-btn";
-  toggleBtn.innerHTML = `<div class="claude-dot"></div><span>Ask Claude</span>`;
+  toggleBtn.innerHTML = `<div class="claude-dot"></div><span>Ask AI</span>`;
   toggleBtn.addEventListener("click", togglePanel);
   hdr.innerHTML = `<div class="hlogo"><span style="font-size:22px">🚀</span>
     <div><div class="hlogo-title">TME+ Membership Sidekick</div><div class="hlogo-sub">Your companion through every module</div></div></div>
@@ -1213,11 +1248,122 @@ function render() {
   homeBtn.innerHTML = `<span>🏠</span><span>Dashboard</span>`;
   homeBtn.addEventListener("click", () => { curView="home"; render(); });
 
+  // Search
+  const searchWrap = document.createElement("div"); searchWrap.className = "search-wrap";
+  const searchBtn = document.createElement("button"); searchBtn.className = "btn-search";
+  searchBtn.innerHTML = `<span>🔍</span><span>Search</span>`;
+  const searchDrop = document.createElement("div"); searchDrop.className = "search-drop";
+  const searchInput = document.createElement("input"); searchInput.className = "search-input";
+  searchInput.placeholder = "Search lessons, tasks, your answers...";
+  const searchResults = document.createElement("div"); searchResults.className = "search-results";
+  searchDrop.appendChild(searchInput); searchDrop.appendChild(searchResults);
+  searchWrap.appendChild(searchBtn); searchWrap.appendChild(searchDrop);
+
+  searchBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = searchDrop.classList.toggle("open");
+    if (isOpen) { searchInput.value = ""; searchResults.innerHTML = ""; setTimeout(()=>searchInput.focus(), 50); }
+  });
+
+  searchInput.addEventListener("input", () => {
+    const q = searchInput.value.trim().toLowerCase();
+    searchResults.innerHTML = "";
+    if (q.length < 2) return;
+    const results = [];
+
+    MODULES.filter(m=>m.ready).forEach(mod => {
+      (mod.lessons||[]).forEach(l => {
+        const lkey = `${mod.id}_${l.id}`;
+        let matches = [];
+
+        // Search lesson title
+        if (l.title.toLowerCase().includes(q)) matches.push({type:"title", text:l.title});
+
+        // Search learn content
+        (l.learn?.sections||[]).forEach(s => {
+          if (s.h.toLowerCase().includes(q)) matches.push({type:"learn", text:s.h});
+          s.items.forEach(item => { if (item.toLowerCase().includes(q)) matches.push({type:"learn", text:item}); });
+        });
+
+        // Search task labels
+        l.tasks.forEach(t => {
+          if (t.label.toLowerCase().includes(q)) matches.push({type:"task", text:t.label});
+          // Search user answers
+          const v = answers[`${lkey}_${t.id}`];
+          if (v) {
+            const str = Array.isArray(v) ? v.join(", ") : v;
+            if (str.toLowerCase().includes(q)) matches.push({type:"answer", text:str});
+          }
+        });
+
+        if (matches.length > 0) {
+          results.push({mod, lesson:l, matches:matches.slice(0,2)});
+        }
+      });
+    });
+
+    if (results.length === 0) {
+      searchResults.innerHTML = '<div class="search-empty">No results found</div>';
+      return;
+    }
+
+    results.slice(0, 12).forEach(r => {
+      const item = document.createElement("div"); item.className = "search-item";
+      const dot = document.createElement("div"); dot.className = "si-dot"; dot.style.background = r.mod.color;
+      const info = document.createElement("div");
+      const tag = document.createElement("div"); tag.className = "si-tag"; tag.textContent = `${r.mod.tag} · ${r.lesson.tag}`;
+      const title = document.createElement("div"); title.className = "si-title"; title.textContent = r.lesson.title;
+      info.appendChild(tag); info.appendChild(title);
+
+      r.matches.forEach(m => {
+        const matchEl = document.createElement("div"); matchEl.className = "si-match";
+        const prefix = m.type==="answer" ? "Your answer: " : "";
+        let snippet = m.text.length > 80 ? m.text.slice(0, 80) + "…" : m.text;
+        const idx = snippet.toLowerCase().indexOf(q);
+        if (idx >= 0) {
+          snippet = esc(snippet.slice(0, idx)) + "<mark>" + esc(snippet.slice(idx, idx+q.length)) + "</mark>" + esc(snippet.slice(idx+q.length));
+        } else { snippet = esc(snippet); }
+        matchEl.innerHTML = prefix + snippet;
+        info.appendChild(matchEl);
+      });
+
+      item.appendChild(dot); item.appendChild(info);
+      item.addEventListener("click", () => {
+        searchDrop.classList.remove("open");
+        closeMobSidebar();
+        curView="lesson"; curMod=r.mod.id; curLes=r.lesson.id;
+        curTab = r.matches[0]?.type==="learn" ? "learn" : "do";
+        expanded[r.mod.id]=true; saveExp(); chatHistory=[]; render();
+        if(panelOpen) updatePanelContext();
+      });
+      searchResults.appendChild(item);
+    });
+  });
+
+  // Close search when clicking outside
+  document.addEventListener("click", (e) => {
+    if (!searchWrap.contains(e.target)) searchDrop.classList.remove("open");
+  });
+
+  const hbgBtn = document.createElement("button");
+  hbgBtn.className = "btn-hbg";
+  hbgBtn.innerHTML = "☰";
+  hbgBtn.addEventListener("click", toggleMobSidebar);
+
+  hdr.querySelector(".hlogo").insertAdjacentElement("beforebegin", hbgBtn);
   hdr.querySelector(".hprog").insertAdjacentElement("afterbegin", toggleBtn);
+  hdr.querySelector(".hprog").insertAdjacentElement("afterbegin", searchWrap);
   hdr.querySelector(".hprog").insertAdjacentElement("afterbegin", homeBtn);
   app.appendChild(hdr);
 
   const body = document.createElement("div"); body.id = "body-row";
+
+  const mobOverlay = document.createElement("div");
+  mobOverlay.id = "mob-overlay";
+  mobOverlay.className = "mob-ov";
+  mobOverlay.addEventListener("click", closeMobSidebar);
+  body.appendChild(mobOverlay);
+
   body.appendChild(renderSidebar());
 
   const content = document.createElement("div"); content.id = "content";
@@ -1282,7 +1428,7 @@ function renderSidebar() {
         const icon      = !lUnlocked ? "🔒" : isDone ? "✅" : "○";
         btn.innerHTML   = `<span class="licon">${icon}</span><div><div class="ltag">${l.tag}</div><div class="ltitle">${l.title}</div>${!l.required?`<span class="optional-badge">optional</span>`:""}</div>`;
         if (lUnlocked) {
-          btn.addEventListener("click", () => { curView="lesson"; curMod=mod.id; curLes=l.id; curTab="do"; expanded[mod.id]=true; saveExp(); chatHistory=[]; render(); if(panelOpen)updatePanelContext(); });
+          btn.addEventListener("click", () => { closeMobSidebar(); curView="lesson"; curMod=mod.id; curLes=l.id; curTab="do"; expanded[mod.id]=true; saveExp(); chatHistory=[]; render(); if(panelOpen)updatePanelContext(); });
         }
         list.appendChild(btn);
       });
@@ -1432,7 +1578,7 @@ function renderDo(lesson, mod, lkey, wrap) {
   });
 
   if (lesson.prompts?.length) {
-    const lbl = document.createElement("div"); lbl.className="prompt-section-lbl"; lbl.textContent="💬 ChatGPT Prompts — pre-filled with your context, ready to copy";
+    const lbl = document.createElement("div"); lbl.className="prompt-section-lbl"; lbl.textContent="💬 AI Prompts — pre-filled with your context, ready to copy";
     wrap.appendChild(lbl);
     lesson.prompts.forEach(p => {
       const card    = document.createElement("div"); card.className="prompt-card";
@@ -1443,10 +1589,10 @@ function renderDo(lesson, mod, lkey, wrap) {
       const ck      = `${lkey}_${p.label}`;
       const btnRow  = document.createElement("div"); btnRow.className = "prompt-btn-row";
       const cpBtn   = document.createElement("button"); cpBtn.className="btn-copy"+(copied[ck]?" copied":"");
-      cpBtn.innerHTML = copied[ck]?"✓ Copied!":"📋 Copy for ChatGPT";
+      cpBtn.innerHTML = copied[ck]?"✓ Copied!":"📋 Copy Prompt";
       cpBtn.addEventListener("click", () => { navigator.clipboard&&navigator.clipboard.writeText(filled); copied[ck]=true; render(); setTimeout(()=>{copied[ck]=false;render();},2000); });
       const askBtn  = document.createElement("button"); askBtn.className="btn-ask-claude";
-      askBtn.innerHTML = "✨ Ask Claude to build this";
+      askBtn.innerHTML = "✨ Create with AI";
       askBtn.addEventListener("click", () => {
         if (!panelOpen) togglePanel();
         else updatePanelContext();
@@ -1481,9 +1627,37 @@ function renderDo(lesson, mod, lkey, wrap) {
   doneBtn.textContent = done[`${curMod}_${curLes}`] ? "✅ Marked Complete — click to undo" : "✓ Mark Lesson Complete";
   doneBtn.addEventListener("click", () => {
     const k = `${curMod}_${curLes}`;
+    const wasDone = done[k];
     done[k] = !done[k]; saveDone();
-    // Auto-advance to next lesson if marking done and next exists
-    if (done[k] && nextLes) { curLes=nextLes.id; curTab="learn"; chatHistory=[]; }
+
+    if (done[k] && !wasDone) {
+      const mod = MODULES.find(m=>m.id===curMod);
+      const mods = MODULES.filter(m=>m.ready);
+      const modIdx = mods.findIndex(m=>m.id===curMod);
+      const nextModObj = modIdx >= 0 && modIdx < mods.length-1 ? mods[modIdx+1] : null;
+      const justFinishedAllModules = mods.every(m=>(m.lessons||[]).filter(l=>l.required).every(l=>done[`${m.id}_${l.id}`]));
+      const justFinishedModule = !wasDone && allCoresDone(curMod);
+      const wasModuleDoneBefore = (mod.lessons||[]).filter(l=>l.required).filter(l=>l.id!==curLes).every(l=>done[`${curMod}_${l.id}`]) === false;
+
+      if (justFinishedAllModules) {
+        render(); if(panelOpen) updatePanelContext();
+        setTimeout(()=>showCelebration("all-done", mod, null), 300);
+        return;
+      } else if (justFinishedModule) {
+        if (nextLes) { curLes=nextLes.id; curTab="learn"; chatHistory=[]; }
+        render(); if(panelOpen) updatePanelContext();
+        setTimeout(()=>showCelebration("module", mod, nextModObj), 300);
+        return;
+      } else {
+        if (nextLes) { curLes=nextLes.id; curTab="learn"; chatHistory=[]; }
+        render(); if(panelOpen) updatePanelContext();
+        setTimeout(()=>showCelebration("lesson", mod, null), 300);
+        return;
+      }
+    }
+
+    // Undo case
+    if (nextLes) { curLes=nextLes.id; curTab="learn"; chatHistory=[]; }
     render(); if(panelOpen) updatePanelContext();
   });
   nav.appendChild(doneBtn);
@@ -1499,6 +1673,67 @@ function renderDo(lesson, mod, lkey, wrap) {
   }
 
   wrap.appendChild(nav);
+}
+
+// ── Celebration ────────────────────────────────────────────────
+function showCelebration(type, mod, nextMod) {
+  const ov = document.createElement("div"); ov.className = "cel-ov";
+  const bg = document.createElement("div"); bg.className = "cel-bg";
+  const card = document.createElement("div"); card.className = "cel-c";
+
+  // Confetti
+  const conf = document.createElement("div"); conf.className = "conf";
+  const colors = ["#F07830","#5ABF59","#14C4CC","#D91E8C","#7B6FD4","#FFD700"];
+  for (let i = 0; i < 40; i++) {
+    const dot = document.createElement("div"); dot.className = "cdot";
+    dot.style.left = Math.random()*100+"%";
+    dot.style.background = colors[Math.floor(Math.random()*colors.length)];
+    dot.style.animationDelay = Math.random()*0.8+"s";
+    conf.appendChild(dot);
+  }
+  card.appendChild(conf);
+
+  let emoji, badge, badgeColor, title, text, buttons;
+
+  if (type === "all-done") {
+    emoji = "🏆"; badgeColor = "#FFD700"; badge = "INCREDIBLE";
+    title = "You've Completed Everything!";
+    text = "Every single lesson across all modules — done. You have a fully mapped-out membership blueprint. Time to make it real.";
+    buttons = [{label:"View Dashboard", action:()=>{ov.remove();curView="home";render();}}];
+  } else if (type === "module") {
+    emoji = "🎉"; badgeColor = mod.color; badge = `${mod.tag.toUpperCase()} COMPLETE`;
+    title = `${mod.name} — Done!`;
+    text = nextMod
+      ? `You've finished all the core lessons in ${mod.tag}. ${nextMod.tag}: ${nextMod.name} is now unlocked!`
+      : `You've finished all the core lessons in ${mod.tag}. Deep dives are available if you want to go further.`;
+    buttons = [];
+    if (nextMod) buttons.push({label:`Start ${nextMod.tag} →`, action:()=>{ov.remove();curView="lesson";curMod=nextMod.id;curLes=(nextMod.lessons||[])[0]?.id||"cl1";curTab="learn";expanded[nextMod.id]=true;saveExp();chatHistory=[];render();}});
+    buttons.push({label:"Stay Here", action:()=>{ov.remove();}});
+  } else {
+    emoji = "✅"; badgeColor = mod.color; badge = "LESSON COMPLETE";
+    title = "Nice Work!";
+    text = "Lesson marked complete. Keep the momentum going!";
+    buttons = [{label:"Continue", action:()=>{ov.remove();}}];
+  }
+
+  const emEl = document.createElement("span"); emEl.className = "cel-em"; emEl.textContent = emoji;
+  const bdEl = document.createElement("div"); bdEl.className = "cel-bd"; bdEl.style.background = badgeColor; bdEl.textContent = badge;
+  const ttEl = document.createElement("div"); ttEl.className = "cel-tt"; ttEl.textContent = title;
+  const txEl = document.createElement("div"); txEl.className = "cel-tx"; txEl.textContent = text;
+  const bsEl = document.createElement("div"); bsEl.className = "cel-bs";
+
+  buttons.forEach((b, i) => {
+    const btn = document.createElement("button");
+    btn.className = i === 0 ? "btn-cn" : "btn-cc";
+    btn.textContent = b.label;
+    btn.addEventListener("click", b.action);
+    bsEl.appendChild(btn);
+  });
+
+  card.appendChild(emEl); card.appendChild(bdEl); card.appendChild(ttEl); card.appendChild(txEl); card.appendChild(bsEl);
+  ov.appendChild(bg); ov.appendChild(card);
+  bg.addEventListener("click", () => ov.remove());
+  document.body.appendChild(ov);
 }
 
 // ── Home / Dashboard ───────────────────────────────────────────
@@ -1686,7 +1921,7 @@ function renderSetup() {
   const card  = document.createElement("div"); card.className="setup-card";
   card.innerHTML=`<div style="text-align:center;font-size:42px;margin-bottom:10px">🚀</div>
     <h1>Welcome to Your TME+ Sidekick</h1>
-    <p>Set up your context once and Claude — your built-in membership coach — will know exactly who you are and what you're building as you work through every module.</p>`;
+    <p>Set up your context once and your built-in AI membership coach will know exactly who you are and what you're building as you work through every module.</p>`;
 
   const fields=[{k:"name",lbl:"Your first name",ph:"e.g. Sarah"},{k:"market",lbl:"My target market are…",ph:"e.g. portrait photographers who want to build recurring income"},{k:"focus",lbl:"My area of focus is…",ph:"e.g. helping them launch and grow a membership community"},{k:"identity",lbl:"I am a…",ph:"e.g. business coach and educator for creative entrepreneurs"}];
   const form={name:"",market:"",focus:"",identity:""};
