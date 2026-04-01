@@ -155,6 +155,10 @@ textarea{width:100%;min-height:86px;padding:9px 11px;border:1.5px solid #e0e3f0;
 .btn-bp{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.75);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;flex-shrink:0}
 .btn-bp:hover{background:rgba(255,255,255,.15);color:#fff}
 .btn-hbg{display:none;background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:8px;padding:7px 10px;font-size:16px;cursor:pointer;flex-shrink:0}
+/* STU REMINDER */
+.stu-reminder{background:linear-gradient(135deg,rgba(240,120,48,.07),rgba(90,191,89,.05));border:1.5px solid rgba(240,120,48,.2);border-radius:10px;padding:13px 16px;margin-bottom:16px;font-size:13px;color:#444;line-height:1.65}
+.stu-reminder strong{color:#1C2B1C}
+.stu-reminder .stu-emoji{font-size:15px}
 /* SEARCH */
 .search-wrap{position:relative;flex-shrink:0}
 .btn-search{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;flex-shrink:0}
@@ -227,7 +231,11 @@ textarea{width:100%;min-height:86px;padding:9px 11px;border:1.5px solid #e0e3f0;
 .mob-ov.vis{display:block}
 @media(max-width:680px){
   .btn-hbg{display:flex;align-items:center}
-  .btn-claude-toggle span,.btn-bp span,.btn-home span:last-child,.hlogo-sub{display:none}
+  .btn-claude-toggle span,.btn-bp span,.btn-home span:last-child,.btn-search span:last-child,.hlogo-sub{display:none}
+  #header{padding:8px 10px;gap:6px}
+  .hlogo-title{font-size:12px}
+  .hprog{gap:6px}
+  .hprog-inner{display:none}
   #sidebar{position:fixed;left:-215px;top:0;height:100vh;z-index:150;transition:left .25s;box-shadow:4px 0 20px rgba(0,0,0,.15)}
   #sidebar.mob-o{left:0}
   #content,.hw{padding:14px}
@@ -1541,6 +1549,10 @@ function renderLearn(lesson, mod, wrap) {
 }
 
 function renderDo(lesson, mod, lkey, wrap) {
+  const reminder = document.createElement("div"); reminder.className = "stu-reminder";
+  reminder.innerHTML = `<strong>Listen...</strong> the more you pour into these answers, the better your results will be. Don't overthink it — just brain dump everything. Messy is good. Polished comes later. Your AI outputs will be WAY more specific and useful when you give it the real, raw details. So word vomit your heart out. Seriously. <span class="stu-emoji">🙌</span>`;
+  wrap.appendChild(reminder);
+
   lesson.tasks.forEach((task,i) => {
     const card = document.createElement("div"); card.className = "task-card";
     const lbl  = document.createElement("div"); lbl.className = "task-lbl";
